@@ -6,4 +6,4 @@ edition = "2021"
 [dependencies]
 packed_struct = { version = "0.10.1", default-features = false }
 heapless = "0.8"
-thiserror = "2.0.8"
+thiserror = { version = "2.0.8", default-features = false }
