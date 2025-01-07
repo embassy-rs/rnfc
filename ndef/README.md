@@ -44,7 +44,6 @@ match NdefTlv::<1024>::from_bytes(&ndef_tlv_bytes) {
 
 ## Planned Features
 
-- **Multiple NDEF Records Support**: Add support for parsing and building multiple NDEF records within a single buffer.
 - **Payload Decoding**: Support for decoding specific payload types like URIs, MIME types, and more.
 - **Extended Tag Compatibility**: Improve compatibility with a wider range of NFC tags beyond ST25DV.
 

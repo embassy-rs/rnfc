@@ -27,7 +27,7 @@
 //! let ndef_tlv_bytes = [0x03, 0x27, /* NDEF record data */];
 //! const MAX_PAYLOAD_SIZE: usize = 1024;
 //!
-//! match NdefTlv::<MAX_PAYLOAD_SIZE>::from_bytes(&ndef_tlv_bytes) {
+//! match NdefTlv::<MAX_PAYLOAD_SIZE, MAX_RECORDS>::from_bytes(&ndef_tlv_bytes) {
 //!     Ok(ndef_tlv) => println!("{:?}", ndef_tlv),
 //!     Err(e) => println!("Error parsing NDEF TLV: {:?}", e),
 //! }
@@ -44,7 +44,6 @@
 //!
 //! - **Work in Progress**: This crate may not be fully functional or stable.
 //! - **Compatibility**: Initially built for **ST25DV tags**, but PRs are welcome to improve compatibility with other NFC tags.
-//! - **Multiple NDEF Records**: Support for parsing multiple NDEF records in a single buffer is planned.
 //! - **Payload Decoding**: Future support for decoding payloads of known types (e.g., URI, MIME) is planned.
 //!
 //! ## Contributing
@@ -60,12 +59,20 @@ use thiserror::Error;
 pub enum TlvError {
     #[error("Invalid TLV tag")]
     InvalidTag,
+    #[error("Input buffer is empty")]
+    EmptyInputBuffer,
+    #[error("Incomplete input buffer")]
+    IncompleteInputBuffer,
     #[error("Invalid TLV length")]
     InvalidLength,
-    #[error("Provided buffer is too small")]
-    BufferTooSmall,
+    #[error("Maximum number of NDEF records exceeded, provide a larger MAX_RECORDS")]
+    MaxRecordsExceeded,
+    #[error("Provided buffer is too small, provided: {provided}, required: {required}")]
+    BufferTooSmall { provided: usize, required: usize },
     #[error("Unsupported Tag type, only NDEF is supported")]
     NotNdefType,
+    #[error("Invalid NDEF record")]
+    NdefRecordError(#[from] NdefRecordError),
 }
 
 #[derive(Error, Debug)]
@@ -196,6 +203,7 @@ impl TryFrom<u8> for Tag {
 }
 
 /// Type-Length (part of TLV) structure
+#[derive(Debug)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub struct TL {
     tag: Tag,
@@ -214,15 +222,16 @@ pub struct TL {
 /// # Fields
 /// * `tl`: Type and Length fields of the TLV block
 /// * `value`: The NDEF record contained in this TLV block
+#[derive(Debug)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
-pub struct NdefTlv<const MAX_PAYLOAD_SIZE: usize> {
+pub struct NdefTlv<const MAX_PAYLOAD_SIZE: usize, const MAX_RECORDS: usize> {
     /// Type and Length bytes of the TLV block
     pub tl: TL,
     /// The NDEF record value
-    pub value: Option<NdefRecord<MAX_PAYLOAD_SIZE>>,
+    pub value: Option<Vec<NdefRecord<MAX_PAYLOAD_SIZE>, MAX_RECORDS>>,
 }
 
-impl<const MAX_PAYLOAD_SIZE: usize> NdefTlv<MAX_PAYLOAD_SIZE> {
+impl<const MAX_PAYLOAD_SIZE: usize, const MAX_RECORDS: usize> NdefTlv<MAX_PAYLOAD_SIZE, MAX_RECORDS> {
     /// Parses a TLV structure from a byte slice.
     ///
     /// # Parameters
@@ -239,7 +248,9 @@ impl<const MAX_PAYLOAD_SIZE: usize> NdefTlv<MAX_PAYLOAD_SIZE> {
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, TlvError> {
         // The TLV block must be at least 1 bytes long (Terminator TLV only contains the tag byte)
         if bytes.is_empty() {
-            return Err(TlvError::BufferTooSmall);
+            #[cfg(feature = "defmt-03")]
+            defmt::trace!("Buffer is empty");
+            return Err(TlvError::EmptyInputBuffer);
         }
 
         // Handle terminator TLV
@@ -257,7 +268,9 @@ impl<const MAX_PAYLOAD_SIZE: usize> NdefTlv<MAX_PAYLOAD_SIZE> {
         // If the length field = 0xFF, we should parsed the extended field length and populate it
         let tl = if bytes[1] == 0xFF {
             if bytes.len() < 4 {
-                return Err(TlvError::BufferTooSmall);
+                #[cfg(feature = "defmt-03")]
+                defmt::trace!("Buffer too small for extended length field");
+                return Err(TlvError::IncompleteInputBuffer);
             }
             let length = ((bytes[1] as u32) << 16) | ((bytes[2] as u32) << 8) | (bytes[3] as u32);
             TL {
@@ -279,11 +292,41 @@ impl<const MAX_PAYLOAD_SIZE: usize> NdefTlv<MAX_PAYLOAD_SIZE> {
         // Parse NDEF record length
         let value_length = tl.length.ok_or(TlvError::InvalidLength)? as usize;
         if bytes.len() < 2 + value_length {
-            return Err(TlvError::BufferTooSmall);
+            #[cfg(feature = "defmt-03")]
+            defmt::trace!("Buffer too small for NDEF record, need {} bytes", 2 + value_length);
+            return Err(TlvError::BufferTooSmall {
+                provided: bytes.len(),
+                required: 2 + value_length,
+            });
         }
 
         // Parse NDEF record
-        let value = Some(NdefRecord::from_bytes(&bytes[2..2 + value_length]).map_err(|_| TlvError::InvalidLength)?);
+        #[cfg(feature = "defmt-03")]
+        defmt::trace!("Attempting to parse NDEF records");
+        let mut vec: Vec<NdefRecord<MAX_PAYLOAD_SIZE>, MAX_RECORDS> = Vec::new();
+        let mut offset = 2; // Start after initial 2 bytes
+        let mut total_bytes_processed = 0;
+
+        while total_bytes_processed < value_length {
+            let remaining_bytes = &bytes[offset..];
+            let (record, bytes_processed) = NdefRecord::from_bytes(remaining_bytes)?;
+
+            if vec.push(record).is_err() {
+                return Err(TlvError::MaxRecordsExceeded);
+            }
+
+            offset += bytes_processed;
+            total_bytes_processed += bytes_processed;
+
+            if vec.last().unwrap().header.message_end {
+                break;
+            }
+        }
+
+        let value = Some(vec);
+
+        #[cfg(feature = "defmt-03")]
+        defmt::trace!("Successfully parsed {} NDEF records from TLV", vec.len());
 
         Ok(Self { tl, value })
     }
@@ -315,7 +358,10 @@ impl<const MAX_PAYLOAD_SIZE: usize> NdefTlv<MAX_PAYLOAD_SIZE> {
 
         // Check if the buffer is too small
         if buffer.len() < required_size {
-            return Err(TlvError::BufferTooSmall);
+            return Err(TlvError::BufferTooSmall {
+                provided: buffer.len(),
+                required: required_size,
+            });
         }
 
         let mut offset = 0;
@@ -327,7 +373,7 @@ impl<const MAX_PAYLOAD_SIZE: usize> NdefTlv<MAX_PAYLOAD_SIZE> {
         // Handle length field
         if let Some(length) = self.tl.length {
             if length > 0xFE {
-                // Extended length (0xFF followed by 3-byte length)
+                // Extended length (0xFF followed by 2-byte length)
                 buffer[offset] = 0xFF;
                 offset += 1;
                 buffer[offset..offset + 2].copy_from_slice(&length.to_be_bytes()[1..3]);
@@ -339,10 +385,14 @@ impl<const MAX_PAYLOAD_SIZE: usize> NdefTlv<MAX_PAYLOAD_SIZE> {
             }
 
             // Write the NDEF record value if present
-            if let Some(record) = &self.value {
-                let value_buffer = &mut buffer[offset..];
-                let bytes_written = record.to_bytes(value_buffer).unwrap();
-                offset += bytes_written;
+            if let Some(records) = &self.value {
+                for record in records {
+                    let value_buffer = &mut buffer[offset..];
+
+                    let bytes_written = record.to_bytes(value_buffer)?;
+
+                    offset += bytes_written;
+                }
             }
         } else {
             return Err(TlvError::InvalidLength);
@@ -370,7 +420,7 @@ pub enum TypeNameFormat {
 }
 
 /// NDEF message record header
-#[derive(PackedStruct, PartialEq)]
+#[derive(PackedStruct, PartialEq, Debug)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[packed_struct(size_bytes = "1", bit_numbering = "lsb0")]
 pub struct NdefRecordHeader {
@@ -416,7 +466,7 @@ pub struct NdefRecordHeader {
 /// ```ignore
 /// let record = NdefRecord::<256>::from_bytes(&bytes).unwrap();
 /// ```
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub struct NdefRecord<const MAX_PAYLOAD_SIZE: usize> {
     /// The NDEF record header containing flags and type name format
@@ -462,7 +512,7 @@ impl<const MAX_PAYLOAD_SIZE: usize> NdefRecord<MAX_PAYLOAD_SIZE> {
     /// let bytes = [0x03, 0x10, /* NDEF record bytes */];
     /// let ndef_record = NdefRecord::<1024>::from_bytes(&bytes)?;
     /// ```
-    pub fn from_bytes(bytes: &[u8]) -> Result<Self, NdefRecordError> {
+    pub fn from_bytes(bytes: &[u8]) -> Result<(Self, usize), NdefRecordError> {
         // Minimum size check (header + type_length + payload_length)
         if bytes.len() < 3 {
             return Err(NdefRecordError::BufferTooSmall);
@@ -541,15 +591,20 @@ impl<const MAX_PAYLOAD_SIZE: usize> NdefRecord<MAX_PAYLOAD_SIZE> {
             .extend_from_slice(&bytes[offset..payload_end])
             .map_err(|_| NdefRecordError::VecCapacityError)?;
 
-        Ok(Self {
-            header,
-            type_length,
-            payload_length,
-            id_length,
-            record_type,
-            id,
-            payload,
-        })
+        let bytes_processed = payload_end; // The total number of bytes processed
+
+        Ok((
+            Self {
+                header,
+                type_length,
+                payload_length,
+                id_length,
+                record_type,
+                id,
+                payload,
+            },
+            bytes_processed,
+        ))
     }
 
     /// Serializes the NDEF record to bytes, writing to a provided buffer.
@@ -652,13 +707,13 @@ mod tests {
             0x75, 0x73, 0x74, 0x70, 0x6f, 0x73, 0x74, 0x63, 0x61, 0x72, 0x64, 0x2d, 0x76, 0x31, 0xd, 0xe, 0xa, 0xd, 0xb, 0xe,
             0xe, 0xf, 0xfe, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
         ];
-        let tlv = NdefTlv::<1024>::from_bytes(&bytes).unwrap();
+        let tlv = NdefTlv::<1024, 1>::from_bytes(&bytes).unwrap();
 
         assert_eq!(tlv.tl.tag, Tag::Ndef);
         assert_eq!(tlv.tl.length, Some(39));
 
         let total_tlv_size = tlv.total_size().expect("total size should be present");
-        let value = tlv.value.expect("value should be present");
+        let value = tlv.value.expect("value should be present").pop().unwrap();
         // Check header
         assert_eq!(value.header.type_name_format, TypeNameFormat::External);
         assert!(!value.header.id_present);
@@ -699,27 +754,30 @@ mod tests {
         ])
         .unwrap();
         let payload: Vec<u8, 1024> = Vec::from_slice(&[0xd, 0xe, 0xa, 0xd, 0xb, 0xe, 0xe, 0xf]).unwrap();
-        let tlv = NdefTlv::<1024> {
+        let record = NdefRecord {
+            header: NdefRecordHeader {
+                type_name_format: TypeNameFormat::External,
+                id_present: false,
+                short: true,
+                chunk: false,
+                message_begin: true,
+                message_end: true,
+            },
+            type_length: 28,
+            payload_length: 8,
+            id_length: None,
+            record_type,
+            id: None,
+            payload,
+        };
+        let mut records = Vec::new();
+        records.push(record).unwrap();
+        let tlv = NdefTlv::<1024, 1> {
             tl: TL {
                 tag: Tag::Ndef,
                 length: Some(39),
             },
-            value: Some(NdefRecord {
-                header: NdefRecordHeader {
-                    type_name_format: TypeNameFormat::External,
-                    id_present: false,
-                    short: true,
-                    chunk: false,
-                    message_begin: true,
-                    message_end: true,
-                },
-                type_length: 28,
-                payload_length: 8,
-                id_length: None,
-                record_type,
-                id: None,
-                payload,
-            }),
+            value: Some(records),
         };
 
         let mut buffer = [0u8; 60];
@@ -738,11 +796,17 @@ mod tests {
     fn test_parse_ndef_tlv_errors() {
         // Test buffer too small
         let bytes = [0x03, 0x04, 0x01];
-        assert!(matches!(NdefTlv::<1024>::from_bytes(&bytes), Err(TlvError::BufferTooSmall)));
+        assert!(matches!(
+            NdefTlv::<1024, 1>::from_bytes(&bytes),
+            Err(TlvError::BufferTooSmall {
+                provided: _,
+                required: _
+            })
+        ));
 
         // Test wrong tag type
         let bytes = [0x00, 0x04, 0x01, 0x02, 0x03, 0x04];
-        assert!(matches!(NdefTlv::<1024>::from_bytes(&bytes), Err(TlvError::NotNdefType)));
+        assert!(matches!(NdefTlv::<1024, 1>::from_bytes(&bytes), Err(TlvError::NotNdefType)));
     }
 
     #[test]
@@ -768,7 +832,7 @@ mod tests {
             0xfe, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
         ];
 
-        let parsed = NdefRecord::<1024>::from_bytes(&buffer).unwrap();
+        let (parsed, _) = NdefRecord::<1024>::from_bytes(&buffer).unwrap();
 
         // Check header
         assert_eq!(parsed.header.type_name_format, TypeNameFormat::External);
@@ -801,5 +865,143 @@ mod tests {
 
         // Check payload
         assert_eq!(parsed.payload, [0xd, 0xe, 0xa, 0xd, 0xb, 0xe, 0xe, 0xf]);
+    }
+
+    #[test]
+    fn test_parse_ndef_message_with_two_text_records() {
+        const TYPE_LEN: usize = 1;
+        const PAYLOAD_LEN: usize = 8;
+
+        // NDEF message with two text records:
+        // - First 4 bytes: Capability Container (CC) descriptor
+        // - Followed by TLV blocks containing 2 records:
+        //   1. Text record with payload "Hello"
+        //   2. Text record with payload "World"
+        let buffer = [
+            0xe1, 0x40, 0x40, 0x1, 0x3, 0x18, 0x91, 0x1, 0x8, 0x54, 0x2, 0x65, 0x6e, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x51, 0x1,
+            0x8, 0x54, 0x2, 0x65, 0x6e, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0xfe, 0x0, 0x72, 0x64, 0x2d, 0x76, 0x31, 0x0, 0x0, 0x0,
+            0xfe, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+            0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+            0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+            0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+        ];
+
+        let tlv = NdefTlv::<1024, 2>::from_bytes(&buffer[4..]).unwrap();
+        let mut records = tlv.value.unwrap();
+        assert_eq!(records.len(), 2);
+
+        // Test second record deserialization
+        let second_record = records.pop().unwrap();
+        // Check header
+        assert_eq!(second_record.header.type_name_format, TypeNameFormat::WellKnown);
+        assert!(!second_record.header.id_present);
+        assert!(second_record.header.short);
+        assert!(!second_record.header.chunk);
+        assert!(!second_record.header.message_begin);
+        assert!(second_record.header.message_end);
+        // Check type length
+        assert_eq!(second_record.type_length, TYPE_LEN as u8);
+        // Check payload length
+        assert_eq!(second_record.payload_length, PAYLOAD_LEN as u32);
+        // Check ID length
+        assert_eq!(second_record.id_length, None);
+        // Check record type
+        assert_eq!(second_record.record_type, [0x54]);
+        // Check ID
+        assert_eq!(second_record.id, None);
+        // Check payload
+        assert_eq!(second_record.payload, [0x2, 0x65, 0x6e, 0x57, 0x6f, 0x72, 0x6c, 0x64]);
+
+        // Test first record deserialization
+        let first_record = records.pop().unwrap();
+        // Check header
+        assert_eq!(first_record.header.type_name_format, TypeNameFormat::WellKnown);
+        assert!(!first_record.header.id_present);
+        assert!(first_record.header.short);
+        assert!(!first_record.header.chunk);
+        assert!(first_record.header.message_begin);
+        assert!(!first_record.header.message_end);
+
+        // Check type length
+        assert_eq!(first_record.type_length, TYPE_LEN as u8);
+        // Check payload length
+        assert_eq!(first_record.payload_length, PAYLOAD_LEN as u32);
+        // Check ID length
+        assert_eq!(first_record.id_length, None);
+        // Check record type
+        assert_eq!(first_record.record_type, [0x54]);
+        // Check ID
+        assert_eq!(first_record.id, None);
+        // Check payload
+        assert_eq!(first_record.payload, [0x2, 0x65, 0x6e, 0x48, 0x65, 0x6C, 0x6C, 0x6F]);
+    }
+
+    #[test]
+    fn test_serialize_ndef_message_with_two_text_records() {
+        const TYPE_LEN: usize = 1;
+        const PAYLOAD_LEN: usize = 8;
+
+        let mut records = Vec::new();
+
+        // Create two NDEF records
+        let first_record: NdefRecord<32> = NdefRecord {
+            header: NdefRecordHeader {
+                type_name_format: TypeNameFormat::WellKnown,
+                id_present: false,
+                short: true,
+                chunk: false,
+                message_end: false,
+                message_begin: true,
+            },
+            type_length: TYPE_LEN as u8,
+            payload_length: PAYLOAD_LEN as u32,
+            id_length: None,
+            record_type: Vec::from_slice(&[0x54]).unwrap(),
+            id: None,
+            payload: Vec::from_slice(&[0x2, 0x65, 0x6e, 0x48, 0x65, 0x6C, 0x6C, 0x6F]).unwrap(), // "Hello"
+        };
+        records.push(first_record).unwrap();
+
+        let second_record: NdefRecord<32> = NdefRecord {
+            header: NdefRecordHeader {
+                type_name_format: TypeNameFormat::WellKnown,
+                id_present: false,
+                short: true,
+                chunk: false,
+                message_end: true,
+                message_begin: false,
+            },
+            type_length: TYPE_LEN as u8,
+            payload_length: PAYLOAD_LEN as u32,
+            id_length: None,
+            record_type: Vec::from_slice(&[0x54]).unwrap(),
+            id: None,
+            payload: Vec::from_slice(&[0x2, 0x65, 0x6e, 0x57, 0x6f, 0x72, 0x6c, 0x64]).unwrap(), // "World"
+        };
+        records.push(second_record).unwrap();
+
+        let tlv = NdefTlv::<32, 2> {
+            tl: TL {
+                tag: Tag::Ndef,
+                length: Some(24), // Length will be the sum of both records
+            },
+            value: Some(records),
+        };
+
+        // Calculate the required buffer size
+        let mut buffer = [0u8; 256];
+        let bytes_written = tlv.to_bytes(&mut buffer).unwrap();
+
+        // Expected serialized buffer based on the provided buffer in your test case
+        let expected_buffer = [
+            0x3, 0x18, 0x91, 0x1, 0x8, 0x54, 0x2, 0x65, 0x6e, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x51, 0x1, 0x8, 0x54, 0x2, 0x65,
+            0x6e, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0xfe, 0x0, 0x72, 0x64, 0x2d, 0x76, 0x31, 0x0, 0x0, 0x0, 0xfe, 0x0, 0x0, 0x0,
+            0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+            0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+            0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+        ];
+
+        // Assert that the serialized buffer matches the expected output
+        assert_eq!(&buffer[..bytes_written], &expected_buffer[..bytes_written]);
     }
 }
