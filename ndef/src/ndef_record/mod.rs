@@ -2,6 +2,8 @@ use heapless::Vec;
 use packed_struct::prelude::*;
 use thiserror::Error;
 
+mod external_type;
+
 #[derive(Error, Debug)]
 pub enum NdefRecordError {
     #[error("Provided buffer is too small")]
@@ -58,6 +60,34 @@ impl NdefRecordHeader {
     /// Getter for the messaged_end field ot the header
     pub fn message_end(&self) -> bool {
         self.message_end
+    }
+
+    /// Creates a new NDEF record header with all options configurable
+    ///
+    /// # Arguments
+    ///
+    /// * `message_begin` - Whether this is the first record in the message
+    /// * `message_end` - Whether this is the last record in the message
+    /// * `chunk` - Whether this record is part of a chunked payload
+    /// * `short` - Whether the payload length is one byte (true) or four bytes (false)
+    /// * `id_present` - Whether the record contains an ID field
+    /// * `type_name_format` - The Type Name Format (TNF) for interpreting the type field
+    pub fn new(
+        message_begin: bool,
+        message_end: bool,
+        chunk: bool,
+        short: bool,
+        id_present: bool,
+        type_name_format: TypeNameFormat,
+    ) -> Self {
+        Self {
+            message_begin,
+            message_end,
+            chunk,
+            short,
+            id_present,
+            type_name_format,
+        }
     }
 }
 

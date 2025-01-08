@@ -318,10 +318,8 @@ impl<const MAX_PAYLOAD_SIZE: usize, const MAX_RECORDS: usize> NdefTlv<MAX_PAYLOA
 
 #[cfg(test)]
 mod tests {
-    use heapless::Vec;
-
-    use super::{NdefTlv, Tag, TlvError, TL};
-    use crate::ndef_record::{NdefRecord, NdefRecordHeader, TypeNameFormat};
+    use super::{NdefTlv, Tag, TlvError};
+    use crate::ndef_record::{NdefRecord, TypeNameFormat};
 
     #[test]
     fn test_parse_ndef_tlv() {
@@ -371,41 +369,13 @@ mod tests {
 
     #[test]
     fn test_build_ndef_tlv() {
-        let record_type: Vec<u8, 255> = Vec::from_slice(&[
-            0x74, 0x68, 0x65, 0x72, 0x6d, 0x69, 0x67, 0x6f, 0x2e, 0x63, 0x6f, 0x6d, 0x3a, 0x72, 0x75, 0x73, 0x74, 0x70, 0x6f,
-            0x73, 0x74, 0x63, 0x61, 0x72, 0x64, 0x2d, 0x76, 0x31,
-        ])
-        .unwrap();
-        let payload: Vec<u8, 1024> = Vec::from_slice(&[0xd, 0xe, 0xa, 0xd, 0xb, 0xe, 0xe, 0xf]).unwrap();
+        let payload = &[0xd, 0xe, 0xa, 0xd, 0xb, 0xe, 0xe, 0xf];
 
-        let record = NdefRecord {
-            header: NdefRecordHeader {
-                type_name_format: TypeNameFormat::External,
-                id_present: false,
-                short: true,
-                chunk: false,
-                message_begin: true,
-                message_end: true,
-            },
-            type_length: 28,
-            payload_length: 8,
-            id_length: None,
-            record_type,
-            id: None,
-            payload,
-        };
-        let mut records = Vec::new();
-        records.push(record).unwrap();
-        let tlv = NdefTlv::<1024, 1> {
-            tl: TL {
-                tag: Tag::Ndef,
-                length: Some(39),
-            },
-            value: Some(records),
-        };
+        let record = NdefRecord::new_external(b"thermigo.com", b"rustpostcard-v1", payload).unwrap();
+        let message: NdefTlv<1024, 1> = NdefTlv::new(&[record]).unwrap();
 
         let mut buffer = [0u8; 60];
-        let _ = tlv.to_bytes(&mut buffer).unwrap();
+        let _ = message.to_bytes(&mut buffer).unwrap();
         assert_eq!(
             buffer,
             [
