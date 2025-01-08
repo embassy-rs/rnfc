@@ -28,7 +28,7 @@ pub enum TypeNameFormat {
 }
 
 /// NDEF message record header
-#[derive(PackedStruct, PartialEq, Debug)]
+#[derive(PackedStruct, PartialEq, Debug, Clone)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[packed_struct(size_bytes = "1", bit_numbering = "lsb0")]
 pub struct NdefRecordHeader {
@@ -81,7 +81,7 @@ impl NdefRecordHeader {
 /// ```ignore
 /// let record = NdefRecord::<256>::from_bytes(&bytes).unwrap();
 /// ```
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub struct NdefRecord<const MAX_PAYLOAD_SIZE: usize> {
     /// The NDEF record header containing flags and type name format

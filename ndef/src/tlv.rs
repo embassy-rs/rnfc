@@ -22,6 +22,10 @@ pub enum TlvError {
     NotNdefType,
     #[error("Invalid NDEF record")]
     NdefRecordError(#[from] NdefRecordError),
+    #[error("Too many NDEF records, maximum is {0}")]
+    TooManyRecords(usize),
+    #[error("Vector operations failed")]
+    VectorFull,
 }
 
 /// Tag type part of NDEF TLV
@@ -78,6 +82,66 @@ pub struct NdefTlv<const MAX_PAYLOAD_SIZE: usize, const MAX_RECORDS: usize> {
 }
 
 impl<const MAX_PAYLOAD_SIZE: usize, const MAX_RECORDS: usize> NdefTlv<MAX_PAYLOAD_SIZE, MAX_RECORDS> {
+    /// Creates a new NDEF TLV structure containing one or more NDEF records
+    ///
+    /// # Arguments
+    ///
+    /// * `records` - Slice of NDEF records to include in the TLV
+    ///
+    /// # Returns
+    ///
+    /// Returns a Result containing the NdefTlv if successful, or an Error if:
+    /// - The number of records exceeds MAX_RECORDS
+    /// - Vector operations fail
+    /// - The total length of all records exceeds the maximum allowed TLV length
+    pub fn new(records: &[NdefRecord<MAX_PAYLOAD_SIZE>]) -> Result<Self, TlvError> {
+        if records.is_empty() {
+            return Ok(Self {
+                tl: TL {
+                    tag: Tag::Ndef,
+                    length: None,
+                },
+                value: None,
+            });
+        }
+
+        if records.len() > MAX_RECORDS {
+            return Err(TlvError::TooManyRecords(MAX_RECORDS));
+        }
+
+        // Create vector of records, updating message begin/end flags
+        let mut ndef_records: Vec<NdefRecord<MAX_PAYLOAD_SIZE>, MAX_RECORDS> = Vec::new();
+
+        for (index, record) in records.iter().enumerate() {
+            let mut record = record.clone();
+
+            // Update header flags for position in message
+            let is_first = index == 0;
+            let is_last = index == records.len() - 1;
+
+            if is_first {
+                record.header.message_begin = true;
+            }
+
+            if is_last {
+                record.header.message_end = true;
+            }
+
+            ndef_records.push(record).map_err(|_| TlvError::VectorFull)?;
+        }
+
+        // Calculate total length of all records
+        let total_length: u32 = ndef_records.iter().map(|record| record.serialized_size() as u32).sum();
+
+        Ok(Self {
+            tl: TL {
+                tag: Tag::Ndef,
+                length: Some(total_length),
+            },
+            value: Some(ndef_records),
+        })
+    }
+
     /// Parses a TLV structure from a byte slice.
     ///
     /// # Parameters
@@ -313,6 +377,7 @@ mod tests {
         ])
         .unwrap();
         let payload: Vec<u8, 1024> = Vec::from_slice(&[0xd, 0xe, 0xa, 0xd, 0xb, 0xe, 0xe, 0xf]).unwrap();
+
         let record = NdefRecord {
             header: NdefRecordHeader {
                 type_name_format: TypeNameFormat::External,
