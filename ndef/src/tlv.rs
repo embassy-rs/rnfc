@@ -233,10 +233,10 @@ impl<const MAX_PAYLOAD_SIZE: usize, const MAX_RECORDS: usize> NdefTlv<MAX_PAYLOA
             }
         }
 
-        let value = Some(vec);
-
         #[cfg(feature = "defmt-03")]
         defmt::trace!("Successfully parsed {} NDEF records from TLV", vec.len());
+
+        let value = Some(vec);
 
         Ok(Self { tl, value })
     }
