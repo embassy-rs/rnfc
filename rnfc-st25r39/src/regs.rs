@@ -291,12 +291,12 @@ impl<'a, I: Interface> Regs<'a, I> {
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub struct TxDriver(pub u8);
 impl TxDriver {
-    pub const fn d_res(&self) -> u8 {
+    pub const fn d_res(&self) -> TxDriverDRes {
         let val = (self.0 >> 0usize) & 0x0f;
-        val as u8
+        TxDriverDRes(val as u8)
     }
-    pub fn set_d_res(&mut self, val: u8) {
-        self.0 = (self.0 & !(0x0f << 0usize)) | (((val as u8) & 0x0f) << 0usize);
+    pub fn set_d_res(&mut self, val: TxDriverDRes) {
+        self.0 = (self.0 & !(0x0f << 0usize)) | (((val.0 as u8) & 0x0f) << 0usize);
     }
     pub const fn am_mod(&self) -> TxDriverAmMod {
         let val = (self.0 >> 4usize) & 0x0f;
@@ -3205,6 +3205,37 @@ impl From<u8> for RxConf1Lp {
 }
 impl From<RxConf1Lp> for u8 {
     fn from(val: RxConf1Lp) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
+pub struct TxDriverDRes(pub u8);
+impl TxDriverDRes {
+    pub const _1_00: Self = Self(0);
+    pub const _1_19: Self = Self(0x01);
+    pub const _1_40: Self = Self(0x02);
+    pub const _1_61: Self = Self(0x03);
+    pub const _1_79: Self = Self(0x04);
+    pub const _2_02: Self = Self(0x05);
+    pub const _2_49: Self = Self(0x06);
+    pub const _2_94: Self = Self(0x07);
+    pub const _3_41: Self = Self(0x08);
+    pub const _4_06: Self = Self(0x09);
+    pub const _5_95: Self = Self(0x0a);
+    pub const _8_26: Self = Self(0x0b);
+    pub const _17_10: Self = Self(0x0c);
+    pub const _36_60: Self = Self(0x0d);
+    pub const _51_20: Self = Self(0x0e);
+    pub const _HIGH_Z: Self = Self(0x0f);
+}
+impl From<u8> for TxDriverDRes {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<TxDriverDRes> for u8 {
+    fn from(val: TxDriverDRes) -> u8 {
         val.0
     }
 }
