@@ -124,6 +124,8 @@ impl<'d, I: Interface + 'd, IrqPin: InputPin + Wait + 'd> ll::Reader for Iso1444
                 (false, Command::TransmitWithCrc)
             }
         };
+
+        #[cfg(not(feature = "st25r3911b"))]
         this.regs().corr_conf1().write(|w| {
             w.0 = 0x13;
             w.set_corr_s6(!is_anticoll);
@@ -139,7 +141,10 @@ impl<'d, I: Interface + 'd, IrqPin: InputPin + Wait + 'd> ll::Reader for Iso1444
             // Disable Automatic Gain Control (AGC) for better detection of collisions if using Coherent Receiver
             w.set_agc_en(!is_anticoll);
             w.set_agc_m(true); // AGC operates during complete receive period
-            w.set_agc6_3(true); // 0: AGC ratio 3
+            #[cfg(not(feature = "st25r3911b"))]
+            {
+                w.set_agc6_3(true); // 0: AGC ratio 3
+            }
             w.set_sqm_dyn(true); // Automatic squelch activation after end of TX
         })?;
 
@@ -147,11 +152,29 @@ impl<'d, I: Interface + 'd, IrqPin: InputPin + Wait + 'd> ll::Reader for Iso1444
         this.cmd(cmd)?;
 
         // Wait for tx ended
+        #[cfg(not(feature = "st25r3911b"))]
         this.irq_wait(Interrupt::Txe).await?;
+        // #[cfg(feature = "st25r3911b")]
+        // this.irq_wait(|| this.regs().irq_main().read().expect("be readable").txe()).await?;
 
         // Wait for RX started
+        #[cfg(not(feature = "st25r3911b"))]
         this.irq_wait_timeout(Interrupt::Rxs, Duration::from_millis(fwt_ms as _))
             .await?;
+        // #[cfg(feature = "st25r3911b")]
+        // this.irq_wait_timeout(
+        //         || this.regs().irq_main().read().expect("be readable").rxs(),
+        //         Duration::from_millis(fwt_ms as _));
+        #[cfg(feature = "st25r3911b")]
+        let _ = fwt_ms;
+
+        #[cfg(not(feature = "st25r3911b"))]
+        this.irq_wait_timeout(Interrupt::Rxs, Duration::from_millis(fwt_ms as _))
+            .await?;
+        // #[cfg(feature = "st25r3911b")]
+        // with_timeout(Duration::from_millis(fwt_ms as _),
+        //     async { this.regs().irq_main().read().expect("read reg ok").txe() }
+        // );
 
         // Wait for rx ended or error
         // The timeout should never hit, it's just for safety.
@@ -201,7 +224,14 @@ impl<'d, I: Interface + 'd, IrqPin: InputPin + Wait + 'd> ll::Reader for Iso1444
         }
 
         let mut rx_bytes = this.regs().fifo_status1().read()? as usize;
-        rx_bytes |= (stat.fifo_b() as usize) << 8;
+        #[cfg(not(feature = "st25r3911b"))]
+        {
+            rx_bytes |= (stat.fifo_b() as usize) << 8;
+        }
+        #[cfg(feature = "st25r3911b")]
+        {
+            rx_bytes |= (stat.fifo_lb() as usize) << 8;
+        }
 
         if let ll::Frame::Anticoll { bits } = opts {
             let full_bytes = bits / 8;

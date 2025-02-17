@@ -1,0 +1,1349 @@
+---
+block/REGS:
+  items:
+    - name: IO_CONF1
+      byte_offset: 0
+      bit_size: 8
+      access: RW
+      description: IO configuration register 1
+      fieldset: IO_CONF1
+    - name: IO_CONF2
+      byte_offset: 1
+      bit_size: 8
+      access: RW
+      description: IO configuration register 2
+      fieldset: IO_CONF2
+    - name: OP_CONTROL
+      byte_offset: 2
+      bit_size: 8
+      access: RW
+      description: Operation control register
+      fieldset: OP_CONTROL
+    - name: MODE
+      byte_offset: 3
+      bit_size: 8
+      access: RW
+      description: Mode definition register
+      fieldset: MODE
+    - name: BIT_RATE
+      byte_offset: 4
+      bit_size: 8
+      access: RW
+      description: Bit rate definition register
+      fieldset: BIT_RATE
+    - name: ISO14443A_NFC
+      byte_offset: 5
+      bit_size: 8
+      access: RW
+      description: ISO14443A and NFC 106kb/s settings register
+      fieldset: ISO14443A_NFC
+    - name: ISO14443B_1
+      byte_offset: 6
+      bit_size: 8
+      access: RW
+      description: ISO14443B settings register 1
+      fieldset: ISO14443B_1
+    - name: ISO14443B_2
+      byte_offset: 7
+      bit_size: 8
+      access: RW
+      description: ISO14443B and FeliCa settings register
+      fieldset: ISO14443B_2
+    - name: STREAM_MODE
+      byte_offset: 8
+      bit_size: 8
+      access: RW
+      description: Stream mode definition register
+      fieldset: STREAM_MODE
+    - name: AUX
+      byte_offset: 9
+      bit_size: 8
+      access: RW
+      description: Auxiliary definition register
+      fieldset: AUX
+    - name: RX_CONF1
+      byte_offset: 10
+      bit_size: 8
+      access: RW
+      description: Receiver configuration register 1
+      fieldset: RX_CONF1
+    - name: RX_CONF2
+      byte_offset: 11
+      bit_size: 8
+      access: RW
+      description: Receiver configuration register 2
+      fieldset: RX_CONF2
+    - name: RX_CONF3
+      byte_offset: 12
+      bit_size: 8
+      access: RW
+      description: Receiver configuration register 3
+      fieldset: RX_CONF3
+    - name: RX_CONF4
+      byte_offset: 13
+      bit_size: 8
+      access: RW
+      description: Receiver configuration register 4
+      fieldset: RX_CONF4
+    - name: MASK_RX_TIMER
+      byte_offset: 14
+      bit_size: 8
+      access: RW
+      description: Mask receive timer register
+      fieldset: MASK_RX_TIMER
+    - name: NO_RESPONSE_TIMER1
+      byte_offset: 15
+      bit_size: 8
+      access: RW
+      description: No-response timer register 1
+      fieldset: NO_RESPONSE_TIMER1
+    - name: NO_RESPONSE_TIMER2
+      byte_offset: 16
+      bit_size: 8
+      access: RW
+      description: No-response timer register 2
+    - name: GPT_NRT_CTRL
+      byte_offset: 17
+      bit_size: 8
+      access: RW
+      description: General purpose and no-response timer control register
+      fieldset: GPT_NRT_CTRL
+    - name: GPT1
+      byte_offset: 18
+      bit_size: 8
+      access: RW
+      description: General purpose timer register 1
+    - name: GPT2
+      byte_offset: 19
+      bit_size: 8
+      access: RW
+      description: General purpose timer register 2
+    - name: IRQ_MASK_MAIN
+      byte_offset: 20
+      bit_size: 8
+      access: RW
+      description: Main interrupt register
+      fieldset: IRQ_MASK_MAIN
+    - name: IRQ_MASK_TIMER_NFC
+      byte_offset: 21
+      bit_size: 8
+      access: RW
+      description: Mask timer and NFC interrupt register
+      fieldset: IRQ_MASK_TIMER_NFC
+    - name: IRQ_MASK_ERROR_WUP
+      byte_offset: 22
+      bit_size: 8
+      access: RW
+      description: Mask error and wake-up interrupt register
+      fieldset: IRQ_MASK_ERROR_WUP
+    - name: IRQ_MAIN
+      byte_offset: 23
+      bit_size: 8
+      access: R
+      description: Main interrupt register
+      fieldset: IRQ_MAIN
+    - name: IRQ_TIMER_NFC
+      byte_offset: 24
+      bit_size: 8
+      access: R
+      description: Mask timer and NFC interrupt register
+      fieldset: IRQ_TIMER_NFC
+    - name: IRQ_ERROR_WUP
+      byte_offset: 25
+      bit_size: 8
+      access: R
+      description: Error and wake-up interrupt register
+    - name: FIFO_STATUS1
+      byte_offset: 26
+      bit_size: 8
+      access: R
+      description: FIFO status register 1
+    - name: FIFO_STATUS2
+      byte_offset: 27
+      bit_size: 8
+      access: R
+      description: FIFO status register 2
+      fieldset: FIFO_STATUS2
+    - name: COLLISION_STATUS
+      byte_offset: 28
+      bit_size: 8
+      access: R
+      description: Collision display register
+      fieldset: COLLISION_STATUS
+    - name: NUM_TX_BYTES1
+      byte_offset: 29
+      bit_size: 8
+      access: RW
+      description: Number of transmitted bytes register 1
+    - name: NUM_TX_BYTES2
+      byte_offset: 30
+      bit_size: 8
+      access: RW
+      description: Number of transmitted bytes register 2
+      fieldset: NUM_TX_BYTES2
+    - name: NFCIP1_BIT_RATE_DISP
+      byte_offset: 31
+      bit_size: 8
+      access: R
+      description: NFCIP bit rate detection display register
+      fieldset: NFCIP1_BIT_RATE_DISP
+    - name: AD_CONV_RESULT
+      byte_offset: 32
+      bit_size: 8
+      access: R
+      description: A/D converter output register
+    - name: ANT_TUNE_CTRL
+      byte_offset: 33
+      bit_size: 8
+      access: RW
+      description: Antenna calibration control register
+      fieldset: ANT_TUNE_CTRL
+    - name: ANT_TUNE_TARGET
+      byte_offset: 34
+      bit_size: 8
+      access: RW
+      description: Antenna calibration target register
+    - name: ANT_TUNE_DISP
+      byte_offset: 35
+      bit_size: 8
+      access: R
+      description: Antenna calibration display register
+      fieldset: ANT_TUNE_DISP
+    - name: AM_MOD_DEPTH_CTRL
+      byte_offset: 36
+      bit_size: 8
+      access: RW
+      description: AM modulation depth control register
+      fieldset: AM_MOD_DEPTH_CTRL
+    - name: AM_MOD_DEPTH_DISP
+      byte_offset: 37
+      bit_size: 8
+      access: R
+      description: AM modulation depth display register
+    - name: RFO_AM_MOD_LEVEL_DEF
+      byte_offset: 38
+      bit_size: 8
+      access: RW
+      description: RFO AM modulated level definition register
+      fieldset: RFO_AM_LEVEL_DEF
+    - name: RFO_NORMAL_LEVEL_DEF
+      byte_offset: 39
+      bit_size: 8
+      access: RW
+      description: RFO normal level definition register
+      fieldset: RFO_AM_LEVEL_DEF
+    - name: EXT_FIELD_DET_THR
+      byte_offset: 41
+      bit_size: 8
+      access: RW
+      description: External field detector threshold register
+      fieldset: EXT_FIELD_DET_THR
+    - name: REGULATOR_VOLT_CONTROL
+      byte_offset: 42
+      bit_size: 8
+      access: RW
+      description: Regulator voltage control register
+      fieldset: REGULATOR_VOLT_CONTROL
+    - name: REGULATOR_AND_TIM_DISP
+      byte_offset: 43
+      bit_size: 8
+      access: R
+      description: Regulator and timer display register
+      fieldset: REGULATOR_AND_TIM_DISP
+    - name: RSSI_RESULT
+      byte_offset: 44
+      bit_size: 8
+      access: R
+      description: RSSI display register
+      fieldset: RSSI_RESULT
+    - name: GAIN_REDU_STATE
+      byte_offset: 45
+      bit_size: 8
+      access: R
+      description: Gain reduction state register
+      fieldset: GAIN_REDU_STATE
+    - name: CAP_SENSOR_CONTROL
+      byte_offset: 46
+      bit_size: 8
+      access: RW
+      description: Capacitive sensor control register
+      fieldset: CAP_SENSOR_CONTROL
+    - name: CAP_SENSOR_DISP
+      byte_offset: 47
+      bit_size: 8
+      access: R
+      description: Capacitive sensor display register
+      fieldset: CAP_SENSOR_DISP
+    - name: AUX_DISPLAY
+      byte_offset: 48
+      bit_size: 8
+      access: R
+      description: Auxiliary display register
+      fieldset: AUX_DISPLAY
+    - name: WUP_TIMER_CONTROL
+      byte_offset: 49
+      bit_size: 8
+      access: RW
+      description: Wake-up timer control register
+      fieldset: WUP_TIMER_CONTROL
+    - name: AMPLITUDE_MEASURE_CONF
+      byte_offset: 50
+      bit_size: 8
+      access: RW
+      description: Amplitude measurement configuration register
+      fieldset: AMPLITUDE_MEASURE_CONF
+    - name: AMPLITUDE_MEASURE_REF
+      byte_offset: 51
+      bit_size: 8
+      access: RW
+      description: Amplitude measurement reference register
+    - name: AMPLITUDE_MEASURE_AUTO_AVG_DISP
+      byte_offset: 52
+      bit_size: 8
+      access: R
+      description: Amplitude measurement auto-averaging display
+    - name: AMPLITUDE_MEASURE_DISP
+      byte_offset: 53
+      bit_size: 8
+      access: R
+      description: Amplitude measurement display
+    - name: PHASE_MEASURE_CONF
+      byte_offset: 54
+      bit_size: 8
+      access: RW
+      description: Phase measurement configuration
+      fieldset: PHASE_MEASURE_CONF
+    - name: PHASE_MEASURE_REF
+      byte_offset: 55
+      bit_size: 8
+      access: RW
+      description: Phase measurement reference
+    - name: PHASE_MEASURE_AUTO_AVG_DISP
+      byte_offset: 56
+      bit_size: 8
+      access: R
+      description: Phase measurement auto-averaging display
+    - name: PHASE_MEASURE_DISP
+      byte_offset: 57
+      bit_size: 8
+      access: R
+      description: Phase measurement display
+    - name: CAPACITANCE_MEASURE_CONF
+      byte_offset: 58
+      bit_size: 8
+      access: RW
+      description: Capacitance measurement configuration
+      fieldset: CAPACITANCE_MEASURE_CONF
+    - name: CAPACITANCE_MEASURE_REF
+      byte_offset: 59
+      bit_size: 8
+      access: RW
+      description: Capacitance measurement reference
+    - name: CAPACITANCE_MEASURE_AUTO_AVG_DISP
+      byte_offset: 60
+      bit_size: 8
+      access: R
+      description: Capacitance measurement auto-averaging display
+    - name: CAPACITANCE_MEASURE_DISP
+      byte_offset: 61
+      bit_size: 8
+      access: R
+      description: Capacitance measurement display
+    - name: IC_IDENTITY
+      byte_offset: 63
+      bit_size: 8
+      access: R
+      description: IC identity register
+      fieldset: IC_IDENTITY
+fieldset/IO_CONF1:
+  bit_size: 8
+  fields:
+  - name: lf_clk_off
+    bit_offset: 0
+    bit_size: 1
+  - name: out_cl
+    bit_offset: 1
+    bit_size: 2
+    enum: IO_CONF1_out_cl
+  - name: osc
+    bit_offset: 3
+    bit_size: 1
+    default: 1
+  - name: fifo_lt
+    bit_offset: 4
+    bit_size: 2
+  - name: rfo2
+    bit_offset: 6
+    bit_size: 1
+  - name: single
+    bit_offset: 7
+    bit_size: 1
+fieldset/IO_CONF2:
+  bit_size: 8
+  fields:
+  - name: slow_up
+    bit_offset: 0
+    bit_size: 1
+  - name: io_18
+    bit_offset: 2
+    bit_size: 1
+  - name: miso_pd1
+    bit_offset: 3
+    bit_size: 1
+  - name: miso_pd2
+    bit_offset: 4
+    bit_size: 1
+  - name: vspd_off
+    bit_offset: 6
+    bit_size: 1
+  - name: sup_3v
+    bit_offset: 7
+    bit_size: 1
+fieldset/OP_CONTROL:
+  bit_size: 8
+  fields:
+  - name: wu
+    bit_offset: 2
+    bit_size: 1
+  - name: tx_en
+    bit_offset: 3
+    bit_size: 1
+  - name: rx_man
+    bit_offset: 4
+    bit_size: 1
+  - name: rx_chn
+    bit_offset: 5
+    bit_size: 1
+  - name: rx_en
+    bit_offset: 6
+    bit_size: 1
+  - name: en
+    bit_offset: 7
+    bit_size: 1
+fieldset/MODE:
+  bit_size: 8
+  fields:
+  - name: nfc_ar
+    bit_offset: 0
+    bit_size: 1
+  - name: om
+    bit_offset: 3
+    bit_size: 4
+    enum: MODE_om
+    default: 1
+  - name: targ
+    bit_offset: 7
+    bit_size: 1
+fieldset/BIT_RATE:
+  bit_size: 8
+  fields:
+  - name: rxrate
+    bit_offset: 0
+    bit_size: 4
+    enum: BIT_RATE_E
+  - name: txrate
+    bit_offset: 4
+    bit_size: 4
+    enum: BIT_RATE_E
+fieldset/ISO14443A_NFC:
+  bit_size: 8
+  fields:
+  - name: antcl
+    bit_offset: 0
+    bit_size: 1
+  - name: p_len
+    bit_offset: 1
+    bit_size: 4
+  - name: nfc_f0
+    bit_offset: 5
+    bit_size: 1
+  - name: no_rx_par
+    bit_offset: 6
+    bit_size: 1
+  - name: no_tx_par
+    bit_offset: 7
+    bit_size: 1
+fieldset/ISO14443B_1:
+  bit_size: 8
+  fields:
+  - name: rx_st_om
+    bit_offset: 0
+    bit_size: 1
+  - name: half
+    bit_offset: 1
+    bit_size: 1
+  - name: eof
+    bit_offset: 2
+    bit_size: 1
+  - name: sof_1
+    bit_offset: 3
+    bit_size: 1
+    enum: ISO14443B_1_sof_1
+  - name: sof_0
+    bit_offset: 4
+    bit_size: 1
+    enum: ISO14443B_1_sof_0
+  - name: egt
+    bit_offset: 5
+    bit_size: 3
+fieldset/ISO14443B_2:
+  bit_size: 8
+  fields:
+  - name: f_p
+    bit_offset: 0
+    bit_size: 2
+    enum: ISO14443B_2_f_p
+  - name: phc_th
+    bit_offset: 2
+    bit_size: 1 
+  - name: eof_12
+    bit_offset: 3
+    bit_size: 1
+  - name: no_eof
+    bit_offset: 4
+    bit_size: 1
+  - name: no_sof
+    bit_offset: 5
+    bit_size: 1
+  - name: tr1
+    bit_offset: 6
+    bit_size: 2
+    enum: ISO14443B_2_tr1
+fieldset/STREAM_MODE:
+  bit_size: 8
+  fields:
+  - name: stx
+    bit_offset: 0
+    bit_size: 3
+    enum: STREAM_MODE_stx
+  - name: scp
+    bit_offset: 3
+    bit_size: 2
+    enum: STREAM_MODE_scp
+  - name: scf
+    bit_offset: 5
+    bit_size: 2
+    enum: STREAM_MODE_scf
+fieldset/AUX:
+  bit_size: 8
+  fields:
+  - name: nfc_n
+    bit_offset: 0
+    bit_size: 2
+  - name: rx_tol
+    bit_offset: 2
+    bit_size: 1
+  - name: ook_hr
+    bit_offset: 3
+    bit_size: 1
+  - name: en_fd
+    bit_offset: 4
+    bit_size: 1
+  - name: tr_am
+    bit_offset: 5
+    bit_size: 1
+  - name: crc_2_fifo
+    bit_offset: 6
+    bit_size: 1
+  - name: no_crc_rx
+    bit_offset: 7
+    bit_size: 1
+fieldset/RX_CONF1:
+  bit_size: 8
+  fields:
+  - name: z12k
+    bit_offset: 0
+    bit_size: 1
+  - name: h80
+    bit_offset: 1
+    bit_size: 1
+  - name: h200
+    bit_offset: 2
+    bit_size: 1
+  - name: lp
+    bit_offset: 3
+    bit_size: 3
+    enum: RX_CONF1_lp
+  - name: amd_sel
+    bit_offset: 6
+    bit_size: 1
+  - name: ch_sel
+    bit_offset: 7
+    bit_size: 1
+fieldset/RX_CONF2:
+  bit_size: 8
+  fields:
+  - name: pmix_cl
+    bit_offset: 0
+    bit_size: 1
+  - name: sqm_dyn
+    bit_offset: 1
+    bit_size: 1
+  - name: agc_alg
+    bit_offset: 2
+    bit_size: 1
+  - name: agc_m
+    bit_offset: 3
+    bit_size: 1
+  - name: agc_en
+    bit_offset: 4
+    bit_size: 1
+  - name: lf_en
+    bit_offset: 5
+    bit_size: 1
+  - name: lf_op
+    bit_offset: 6
+    bit_size: 1
+  - name: rx_lp
+    bit_offset: 7
+    bit_size: 1
+fieldset/RX_CONF3:
+  bit_size: 8
+  fields:
+  - name: rg_nfc
+    bit_offset: 0
+    bit_size: 1
+  - name: lim
+    bit_offset: 1
+    bit_size: 1
+  - name: rg1_pm
+    bit_offset: 2
+    bit_size: 3
+  - name: rg1_am
+    bit_offset: 5
+    bit_size: 3
+fieldset/RX_CONF4:
+  bit_size: 8
+  fields:
+  - name: rg2_pm
+    bit_offset: 0
+    bit_size: 4
+  - name: rg2_am
+    bit_offset: 4
+    bit_size: 4
+fieldset/MASK_RX_TIMER:
+  bit_size: 8
+  fields:
+  - name: mrt0
+    bit_offset: 0
+    bit_size: 1
+    default: 0
+  - name: mrt1
+    bit_offset: 1
+    bit_size: 1
+    default: 0
+  - name: mrt2
+    bit_offset: 2
+    bit_size: 1
+    default: 0
+  - name: mrt3
+    bit_offset: 3
+    bit_size: 1
+    default: 0
+  - name: mrt4
+    bit_offset: 4
+    bit_size: 1
+    default: 0
+  - name: mrt5
+    bit_offset: 5
+    bit_size: 1
+    default: 0
+  - name: mrt6
+    bit_offset: 6
+    bit_size: 1
+    default: 0
+  - name: mrt7
+    bit_offset: 7
+    bit_size: 1
+    default: 0
+fieldset/NO_RESPONSE_TIMER1:
+  bit_size: 8
+  fields:
+  - name: nrt8
+    bit_offset: 0
+    bit_size: 1
+    default: 0
+  - name: nrt9
+    bit_offset: 1
+    bit_size: 1
+    default: 0
+  - name: nrt10
+    bit_offset: 2
+    bit_size: 1
+    default: 0
+  - name: nrt11
+    bit_offset: 3
+    bit_size: 1
+    default: 0
+  - name: nrt12
+    bit_offset: 4
+    bit_size: 1
+    default: 0
+  - name: nrt13
+    bit_offset: 5
+    bit_size: 1
+    default: 0
+  - name: nrt14
+    bit_offset: 6
+    bit_size: 1
+    default: 0
+  - name: nrt15
+    bit_offset: 7
+    bit_size: 1
+    default: 0
+fieldset/GPT_NRT_CTRL:
+  bit_size: 8
+  fields:
+  - name: nrt_step
+    bit_offset: 0
+    bit_size: 1
+    enum: TIMER_EMV_CONTROL_nrt_step
+  - name: nrt_emv
+    bit_offset: 1
+    bit_size: 1
+  - name: gptc
+    bit_offset: 5
+    bit_size: 3
+    enum: TIMER_EMV_CONTROL_gptc
+fieldset/IRQ_MASK_MAIN:
+  bit_size: 8
+  fields:
+  - name: m_col
+    bit_offset: 2
+    bit_size: 1
+  - name: m_txe
+    bit_offset: 3
+    bit_size: 1
+  - name: m_rxe
+    bit_offset: 4
+    bit_size: 1
+  - name: m_rxs
+    bit_offset: 5
+    bit_size: 1
+  - name: m_wl
+    bit_offset: 6
+    bit_size: 1
+  - name: m_osc
+    bit_offset: 7
+    bit_size: 1
+fieldset/IRQ_MASK_TIMER_NFC:
+  bit_size: 8
+  fields:
+  - name: m_nfct
+    bit_offset: 0
+    bit_size: 1
+  - name: m_cat
+    bit_offset: 1
+    bit_size: 1
+  - name: m_cac
+    bit_offset: 2
+    bit_size: 1
+  - name: m_eof
+    bit_offset: 3
+    bit_size: 1
+  - name: m_eon
+    bit_offset: 4
+    bit_size: 1
+  - name: m_gpe
+    bit_offset: 5
+    bit_size: 1
+  - name: m_nre
+    bit_offset: 6
+    bit_size: 1
+  - name: m_dcd
+    bit_offset: 7
+    bit_size: 1
+fieldset/IRQ_MASK_ERROR_WUP:
+  bit_size: 8
+  fields:
+  - name: m_ncap
+    bit_offset: 0
+    bit_size: 1
+  - name: m_wph
+    bit_offset: 1
+    bit_size: 1
+  - name: m_wam
+    bit_offset: 2
+    bit_size: 1
+  - name: m_wt
+    bit_offset: 3
+    bit_size: 1
+  - name: m_err1
+    bit_offset: 4
+    bit_size: 1
+  - name: m_err2
+    bit_offset: 5
+    bit_size: 1
+  - name: m_par
+    bit_offset: 6
+    bit_size: 1
+  - name: m_crc
+    bit_offset: 7
+    bit_size: 1
+fieldset/IRQ_MAIN:
+  bit_size: 8
+  fields:
+  - name: err
+    bit_offset: 0
+    bit_size: 1
+  - name: tim
+    bit_offset: 1
+    bit_size: 1
+  - name: col
+    bit_offset: 2
+    bit_size: 1
+  - name: txe
+    bit_offset: 3
+    bit_size: 1
+  - name: rxe
+    bit_offset: 4
+    bit_size: 1
+  - name: rxs
+    bit_offset: 5
+    bit_size: 1
+  - name: wl
+    bit_offset: 6
+    bit_size: 1
+  - name: osc
+    bit_offset: 7
+    bit_size: 1
+fieldset/IRQ_TIMER_NFC:
+  bit_size: 8
+  fields:
+  - name: nfct
+    bit_offset: 0
+    bit_size: 1
+  - name: cat
+    bit_offset: 1
+    bit_size: 1
+  - name: cac
+    bit_offset: 2
+    bit_size: 1
+  - name: eof
+    bit_offset: 3
+    bit_size: 1
+  - name: eon
+    bit_offset: 4
+    bit_size: 1
+  - name: gpe
+    bit_offset: 5
+    bit_size: 1
+  - name: nre
+    bit_offset: 6
+    bit_size: 1
+  - name: dcd
+    bit_offset: 7
+    bit_size: 1
+fieldset/FIFO_STATUS2:
+  bit_size: 8
+  fields:
+  - name: np_lb
+    bit_offset: 0
+    bit_size: 1
+  - name: fifo_lb
+    bit_offset: 1
+    bit_size: 3
+  - name: fifo_ovr
+    bit_offset: 5
+    bit_size: 1
+  - name: fifo_unf
+    bit_offset: 6
+    bit_size: 1
+fieldset/COLLISION_STATUS:
+  bit_size: 8
+  fields:
+  - name: c_pb
+    bit_offset: 0
+    bit_size: 1
+  - name: c_bit
+    bit_offset: 1
+    bit_size: 3
+  - name: c_byte
+    bit_offset: 4
+    bit_size: 4
+fieldset/NUM_TX_BYTES2:
+  bit_size: 8
+  fields:
+  - name: nbtx
+    bit_offset: 0
+    bit_size: 3
+  - name: ntx
+    bit_offset: 3
+    bit_size: 5
+fieldset/NFCIP1_BIT_RATE_DISP:
+  bit_size: 8
+  fields:
+  - name: nfc_rate
+    bit_offset: 4
+    bit_size: 4
+fieldset/ANT_TUNE_CTRL:
+  bit_size: 8
+  fields:
+  - name: tre
+    bit_offset: 3
+    bit_size: 4
+  - name: trim_s
+    bit_offset: 7
+    bit_size: 1
+fieldset/ANT_TUNE_DISP:
+  bit_size: 8
+  fields:
+  - name: tri_err
+    bit_offset: 3
+    bit_size: 1
+  - name: tri
+    bit_offset: 4
+    bit_size: 4
+fieldset/AM_MOD_DEPTH_CTRL:
+  bit_size: 8
+  fields:
+  - name: modd
+    bit_offset: 1
+    bit_size: 6
+  - name: am_s
+    bit_offset: 7
+    bit_size: 1
+fieldset/RFO_AM_LEVEL_DEF:
+  bit_size: 8
+  fields:
+  - name: d0
+    bit_offset: 0
+    bit_size: 1
+    default: 0
+  - name: d1
+    bit_offset: 1
+    bit_size: 1
+    default: 0
+  - name: d2
+    bit_offset: 2
+    bit_size: 1
+    default: 0
+  - name: d3
+    bit_offset: 3
+    bit_size: 1
+    default: 0
+  - name: d4
+    bit_offset: 4
+    bit_size: 1
+    default: 0
+  - name: d5
+    bit_offset: 5
+    bit_size: 1
+    default: 0
+  - name: d6
+    bit_offset: 6
+    bit_size: 1
+    default: 0
+  - name: d7
+    bit_offset: 7
+    bit_size: 1
+    default: 0
+fieldset/EXT_FIELD_DET_THR:
+  bit_size: 8
+  fields:
+  - name: rfe_t
+    bit_offset: 0
+    bit_size: 4
+    default: 3
+    enum: THRESHOLD_DEF
+  - name: trg_l
+    bit_offset: 4
+    bit_size: 3
+    default: 3
+    enum: THRESHOLD_DEF
+fieldset/REGULATOR_VOLT_CONTROL:
+  bit_size: 8
+  fields:
+  - name: mpsv
+    bit_offset: 1
+    bit_size: 2
+  - name: rege
+    bit_offset: 3
+    bit_size: 4
+  - name: reg_s
+    bit_offset: 7
+    bit_size: 1
+fieldset/REGULATOR_AND_TIM_DISP:
+  bit_size: 8
+  fields:
+  - name: mrt_on
+    bit_offset: 0
+    bit_size: 1
+  - name: nrt_on
+    bit_offset: 1
+    bit_size: 1
+  - name: gpt_on
+    bit_offset: 2
+    bit_size: 1
+  - name: reg
+    bit_offset: 4
+    bit_size: 4
+fieldset/RSSI_RESULT:
+  bit_size: 8
+  fields:
+  - name: rssi_pm
+    bit_offset: 0
+    bit_size: 4
+  - name: rssi_am
+    bit_offset: 4
+    bit_size: 4
+fieldset/GAIN_REDU_STATE:
+  bit_size: 8
+  fields:
+  - name: gs_pm
+    bit_offset: 0
+    bit_size: 4
+  - name: gs_am
+    bit_offset: 4
+    bit_size: 4
+fieldset/CAP_SENSOR_CONTROL:
+  bit_size: 8
+  fields:
+  - name: cs_g
+    bit_offset: 0
+    bit_size: 3
+  - name: cs_mcal
+    bit_offset: 3
+    bit_size: 5
+fieldset/CAP_SENSOR_DISP:
+  bit_size: 8
+  fields:
+  - name: cs_cal_err
+    bit_offset: 1
+    bit_size: 1
+  - name: cs_cal_end
+    bit_offset: 2
+    bit_size: 1
+  - name: cs_cal_val
+    bit_offset: 3
+    bit_size: 5
+fieldset/AUX_DISPLAY:
+  bit_size: 8
+  fields:
+  - name: en_ac
+    bit_offset: 0
+    bit_size: 1
+  - name: nfc_t
+    bit_offset: 1
+    bit_size: 1
+  - name: rx_act
+    bit_offset: 2
+    bit_size: 1
+  - name: rx_on
+    bit_offset: 3
+    bit_size: 1
+  - name: osc_ok
+    bit_offset: 4
+    bit_size: 1
+  - name: tx_on
+    bit_offset: 5
+    bit_size: 1
+  - name: efd_o
+    bit_offset: 6
+    bit_size: 1
+  - name: a_cha
+    bit_offset: 7
+    bit_size: 1
+fieldset/WUP_TIMER_CONTROL:
+  bit_size: 8
+  fields:
+  - name: wph
+    bit_offset: 1
+    bit_size: 1
+  - name: wam
+    bit_offset: 2
+    bit_size: 1
+  - name: wto
+    bit_offset: 3
+    bit_size: 1
+  - name: wut
+    bit_offset: 4
+    bit_size: 3
+  - name: wur
+    bit_offset: 7
+    bit_size: 1
+fieldset/AMPLITUDE_MEASURE_CONF:
+  bit_size: 8
+  fields:
+  - name: am_ae
+    bit_offset: 0
+    bit_size: 1
+  - name: am_aew
+    bit_offset: 1
+    bit_size: 2
+  - name: am_aam
+    bit_offset: 3
+    bit_size: 1
+  - name: am_d
+    bit_offset: 4
+    bit_size: 4
+fieldset/PHASE_MEASURE_CONF:
+  bit_size: 8
+  fields:
+  - name: pm_ae
+    bit_offset: 0
+    bit_size: 1
+  - name: pm_aew
+    bit_offset: 1
+    bit_size: 2
+  - name: pm_aam
+    bit_offset: 3
+    bit_size: 1
+  - name: pm_d
+    bit_offset: 4
+    bit_size: 4
+fieldset/CAPACITANCE_MEASURE_CONF:
+  bit_size: 8
+  fields:
+  - name: cm_ae
+    bit_offset: 0
+    bit_size: 1
+  - name: cm_aew
+    bit_offset: 1
+    bit_size: 2
+  - name: cm_aam
+    bit_offset: 3
+    bit_size: 1
+  - name: cm_d
+    bit_offset: 4
+    bit_size: 4
+fieldset/IC_IDENTITY:
+  bit_size: 8
+  fields:
+  - name: ic_rev
+    bit_offset: 0
+    bit_size: 3
+    enum: IC_IDENTITY_ic_rev
+  - name: ic_type
+    bit_offset: 3
+    bit_size: 5
+    enum: IC_IDENTITY_ic_type
+enum/BIT_RATE_E:
+  bit_size: 4
+  variants:
+  - name: 106
+    value: 0
+  - name: 212
+    value: 1
+  - name: 424
+    value: 2
+  - name: 848
+    value: 3
+  - name: 1695
+    value: 4
+  - name: 3390
+    value: 5
+  - name: 6780
+    value: 6
+enum/THRESHOLD_DEF:
+  bit_size: 8
+  variants:
+  - name: 75mv
+    value: 0
+  - name: 105mv
+    value: 1
+  - name: 150mv
+    value: 2
+  - name: 205mv
+    value: 3
+  - name: 290mv
+    value: 4
+  - name: 400mv
+    value: 5
+  - name: 560mv
+    value: 6
+  - name: 800mv
+    value: 7
+  - name: 25mv
+    value: 8
+  - name: 33mv
+    value: 9
+  - name: 47mv
+    value: 10
+  - name: 64mv
+    value: 11
+  - name: 90mv
+    value: 12
+  - name: 125mv
+    value: 13
+  - name: 175mv
+    value: 14
+  - name: 250mv
+    value: 15
+enum/WAKEUP_TIMES_DEF:
+  bit_size: 8
+  variants:
+  - name: 10
+    value: 0
+  - name: 20
+    value: 1
+  - name: 30
+    value: 2
+  - name: 40
+    value: 3
+  - name: 50
+    value: 4
+  - name: 60
+    value: 5
+  - name: 70
+    value: 6
+  - name: 80
+    value: 7
+enum/IC_IDENTITY_ic_rev:
+  bit_size: 3
+  variants:
+  - name: v0
+    value: 0
+  - name: v3_1
+    value: 2
+  - name: v3_3
+    value: 3
+  - name: v4_0
+    value: 4
+  - name: v4_1
+    value: 5
+enum/IC_IDENTITY_ic_type:
+  bit_size: 5
+  variants:
+  - name: st25r3916
+    value: 5
+enum/IO_CONF1_out_cl:
+  bit_size: 2
+  variants:
+  - name: _3_39_mhz
+    value: 0
+  - name: _6_78_mhz
+    value: 1
+  - name: _13_86_mhz
+    value: 2
+  - name: disabled
+    value: 3
+enum/ISO14443B_1_sof_1:
+  bit_size: 1
+  variants:
+  - name: 2etu
+    value: 0
+  - name: 3etu
+    value: 1
+enum/ISO14443B_1_sof_0:
+  bit_size: 1
+  variants:
+  - name: 10etu
+    value: 0
+  - name: 11etu
+    value: 1
+enum/ISO14443B_2_f_p:
+  bit_size: 2
+  variants:
+  - name: 48
+    value: 0
+  - name: 64
+    value: 1
+  - name: 80
+    value: 2
+  - name: 96
+    value: 3
+enum/ISO14443B_2_tr1:
+  bit_size: 2
+  variants:
+  - name: 80fs80fs
+    value: 0
+  - name: 64fs32fs
+    value: 1
+enum/MODE_om:
+  bit_size: 4
+  variants:
+  - name: targ_nfcip1_active_comm_br_det
+    value: 0
+  - name: targ_nfcip1_active_comm_normal
+    value: 0
+  - name: ini_iso14443a
+    value: 1
+  - name: targ_nfca
+    value: 1
+  - name: ini_iso14443b
+    value: 2
+  - name: targ_nfcb
+    value: 2
+  - name: ini_felica
+    value: 3
+  - name: ini_topaz
+    value: 4
+  - name: targ_nfcf
+    value: 4
+  - name: ini_subcarrier_stream
+    value: 14
+  - name: ini_bpsk_stream
+    value: 15
+enum/RX_CONF1_lp:
+  bit_size: 3
+  variants:
+  - name: 1200khz
+    value: 0
+  - name: 600khz
+    value: 1
+  - name: 300khz
+    value: 2
+  - name: 2000khz
+    value: 4
+  - name: 7000khz
+    value: 5
+enum/STREAM_MODE_scf:
+  bit_size: 2
+  variants:
+  - name: bpsk848
+    value: 0
+  - name: sc212
+    value: 0
+  - name: bpsk1695
+    value: 1
+  - name: sc424
+    value: 1
+  - name: bpsk3390
+    value: 2
+  - name: sc848
+    value: 2
+  - name: bpsk106
+    value: 3
+  - name: sc1695
+    value: 3
+enum/STREAM_MODE_scp:
+  bit_size: 2
+  variants:
+  - name: 1pulse
+    value: 0
+  - name: 2pulses
+    value: 1
+  - name: 4pulses
+    value: 2
+  - name: 8pulses
+    value: 3
+enum/STREAM_MODE_stx:
+  bit_size: 3
+  variants:
+  - name: 106
+    value: 0
+  - name: 212
+    value: 1
+  - name: 424
+    value: 2
+  - name: 848
+    value: 3
+enum/TIMER_EMV_CONTROL_gptc:
+  bit_size: 3
+  variants:
+  - name: no_trigger
+    value: 0
+  - name: erx
+    value: 1
+  - name: srx
+    value: 2
+  - name: etx_nfc
+    value: 3
+enum/TIMER_EMV_CONTROL_nrt_step:
+  bit_size: 1
+  variants:
+  - name: 64_fc
+    value: 0
+  - name: 4096_fc
+    value: 1
