@@ -304,6 +304,618 @@ impl<'a, I: Interface> Regs<'a, I> {
 
 #[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq)]
+pub struct AmplitudeMeasureConf(pub u8);
+impl AmplitudeMeasureConf {
+    pub const fn am_ae(&self) -> bool {
+        let val = (self.0 >> 0_usize) & 1;
+        val != 0
+    }
+    pub fn set_am_ae(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 0_usize)) | ((val as u8) & 1) << 0_usize;
+    }
+    pub const fn am_aew(&self) -> u8 {
+        let val = (self.0 >> 1_usize) & 2;
+        val as u8
+    }
+    pub fn set_am_aew(&mut self, val: u8) {
+        self.0 = (self.0 & !(2 << 1_usize)) | ((val as u8) & 2) << 1_usize;
+    }
+    pub const fn am_aam(&self) -> bool {
+        let val = (self.0 >> 3_usize) & 1;
+        val != 0
+    }
+    pub fn set_am_aam(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 3_usize)) | ((val as u8) & 1) << 3_usize;
+    }
+    pub const fn am_d(&self) -> u8 {
+        let val = (self.0 >> 4_usize) & 4;
+        val as u8
+    }
+    pub fn set_am_d(&mut self, val: u8) {
+        self.0 = (self.0 & !(4 << 4_usize)) | ((val as u8) & 4) << 4_usize;
+    }
+}
+impl Default for AmplitudeMeasureConf {
+    fn default() -> AmplitudeMeasureConf {
+        AmplitudeMeasureConf(0)
+    }
+}
+impl From<u8> for AmplitudeMeasureConf {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<AmplitudeMeasureConf> for u8 {
+    fn from(val: AmplitudeMeasureConf) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct AmModDepthCtrl(pub u8);
+impl AmModDepthCtrl {
+    pub const fn modd(&self) -> u8 {
+        let val = (self.0 >> 1_usize) & 6;
+        val as u8
+    }
+    pub fn set_modd(&mut self, val: u8) {
+        self.0 = (self.0 & !(6 << 1_usize)) | ((val as u8) & 6) << 1_usize;
+    }
+    pub const fn am_s(&self) -> bool {
+        let val = (self.0 >> 7_usize) & 1;
+        val != 0
+    }
+    pub fn set_am_s(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 7_usize)) | ((val as u8) & 1) << 7_usize;
+    }
+}
+impl Default for AmModDepthCtrl {
+    fn default() -> AmModDepthCtrl {
+        AmModDepthCtrl(0)
+    }
+}
+impl From<u8> for AmModDepthCtrl {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<AmModDepthCtrl> for u8 {
+    fn from(val: AmModDepthCtrl) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct AntTuneCtrl(pub u8);
+impl AntTuneCtrl {
+    pub const fn tre(&self) -> u8 {
+        let val = (self.0 >> 3_usize) & 4;
+        val as u8
+    }
+    pub fn set_tre(&mut self, val: u8) {
+        self.0 = (self.0 & !(4 << 3_usize)) | ((val as u8) & 4) << 3_usize;
+    }
+    pub const fn trim_s(&self) -> bool {
+        let val = (self.0 >> 7_usize) & 1;
+        val != 0
+    }
+    pub fn set_trim_s(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 7_usize)) | ((val as u8) & 1) << 7_usize;
+    }
+}
+impl Default for AntTuneCtrl {
+    fn default() -> AntTuneCtrl {
+        AntTuneCtrl(0)
+    }
+}
+impl From<u8> for AntTuneCtrl {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<AntTuneCtrl> for u8 {
+    fn from(val: AntTuneCtrl) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct AntTuneDisp(pub u8);
+impl AntTuneDisp {
+    pub const fn tri_err(&self) -> bool {
+        let val = (self.0 >> 3_usize) & 1;
+        val != 0
+    }
+    pub const fn tri(&self) -> u8 {
+        let val = (self.0 >> 4_usize) & 4;
+        val as u8
+    }
+}
+impl Default for AntTuneDisp {
+    fn default() -> AntTuneDisp {
+        AntTuneDisp(0)
+    }
+}
+impl From<u8> for AntTuneDisp {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<AntTuneDisp> for u8 {
+    fn from(val: AntTuneDisp) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct Aux(pub u8);
+impl Aux {
+    pub const fn nfc_n(&self) -> u8 {
+        let val = (self.0 >> 0_usize) & 2;
+        val as u8
+    }
+    pub fn set_nfc_n(&mut self, val: u8) {
+        self.0 = (self.0 & !(2 << 0_usize)) | ((val as u8) & 2) << 0_usize;
+    }
+    pub const fn rx_tol(&self) -> bool {
+        let val = (self.0 >> 2_usize) & 1;
+        val != 0
+    }
+    pub fn set_rx_tol(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 2_usize)) | ((val as u8) & 1) << 2_usize;
+    }
+    pub const fn ook_hr(&self) -> bool {
+        let val = (self.0 >> 3_usize) & 1;
+        val != 0
+    }
+    pub fn set_ook_hr(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 3_usize)) | ((val as u8) & 1) << 3_usize;
+    }
+    pub const fn en_fd(&self) -> bool {
+        let val = (self.0 >> 4_usize) & 1;
+        val != 0
+    }
+    pub fn set_en_fd(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 4_usize)) | ((val as u8) & 1) << 4_usize;
+    }
+    pub const fn tr_am(&self) -> bool {
+        let val = (self.0 >> 5_usize) & 1;
+        val != 0
+    }
+    pub fn set_tr_am(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 5_usize)) | ((val as u8) & 1) << 5_usize;
+    }
+    pub const fn crc_2_fifo(&self) -> bool {
+        let val = (self.0 >> 6_usize) & 1;
+        val != 0
+    }
+    pub fn set_crc_2_fifo(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 6_usize)) | ((val as u8) & 1) << 6_usize;
+    }
+    pub const fn no_crc_rx(&self) -> bool {
+        let val = (self.0 >> 7_usize) & 1;
+        val != 0
+    }
+    pub fn set_no_crc_rx(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 7_usize)) | ((val as u8) & 1) << 7_usize;
+    }
+}
+impl Default for Aux {
+    fn default() -> Aux {
+        Aux(0)
+    }
+}
+impl From<u8> for Aux {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<Aux> for u8 {
+    fn from(val: Aux) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct AuxDisplay(pub u8);
+impl AuxDisplay {
+    pub const fn en_ac(&self) -> bool {
+        let val = (self.0 >> 0_usize) & 1;
+        val != 0
+    }
+    pub const fn nfc_t(&self) -> bool {
+        let val = (self.0 >> 1_usize) & 1;
+        val != 0
+    }
+    pub const fn rx_act(&self) -> bool {
+        let val = (self.0 >> 2_usize) & 1;
+        val != 0
+    }
+    pub const fn rx_on(&self) -> bool {
+        let val = (self.0 >> 3_usize) & 1;
+        val != 0
+    }
+    pub const fn osc_ok(&self) -> bool {
+        let val = (self.0 >> 4_usize) & 1;
+        val != 0
+    }
+    pub const fn tx_on(&self) -> bool {
+        let val = (self.0 >> 5_usize) & 1;
+        val != 0
+    }
+    pub const fn efd_o(&self) -> bool {
+        let val = (self.0 >> 6_usize) & 1;
+        val != 0
+    }
+    pub const fn a_cha(&self) -> bool {
+        let val = (self.0 >> 7_usize) & 1;
+        val != 0
+    }
+}
+impl Default for AuxDisplay {
+    fn default() -> AuxDisplay {
+        AuxDisplay(0)
+    }
+}
+impl From<u8> for AuxDisplay {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<AuxDisplay> for u8 {
+    fn from(val: AuxDisplay) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct BitRate(pub u8);
+impl BitRate {
+    pub const fn rxrate(&self) -> BitRateE {
+        let val = (self.0 >> 0_usize) & 4;
+        BitRateE(val as u8)
+    }
+    pub fn set_rxrate(&mut self, val: BitRateE) {
+        self.0 = (self.0 & !(4 << 0_usize)) | ((val.0 as u8) & 4) << 0_usize;
+    }
+    pub const fn txrate(&self) -> BitRateE {
+        let val = (self.0 >> 4_usize) & 4;
+        BitRateE(val as u8)
+    }
+    pub fn set_txrate(&mut self, val: BitRateE) {
+        self.0 = (self.0 & !(4 << 4_usize)) | ((val.0 as u8) & 4) << 4_usize;
+    }
+}
+impl Default for BitRate {
+    fn default() -> BitRate {
+        BitRate(0)
+    }
+}
+impl From<u8> for BitRate {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<BitRate> for u8 {
+    fn from(val: BitRate) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct CapacitanceMeasureConf(pub u8);
+impl CapacitanceMeasureConf {
+    pub const fn cm_ae(&self) -> bool {
+        let val = (self.0 >> 0_usize) & 1;
+        val != 0
+    }
+    pub fn set_cm_ae(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 0_usize)) | ((val as u8) & 1) << 0_usize;
+    }
+    pub const fn cm_aew(&self) -> u8 {
+        let val = (self.0 >> 1_usize) & 2;
+        val as u8
+    }
+    pub fn set_cm_aew(&mut self, val: u8) {
+        self.0 = (self.0 & !(2 << 1_usize)) | ((val as u8) & 2) << 1_usize;
+    }
+    pub const fn cm_aam(&self) -> bool {
+        let val = (self.0 >> 3_usize) & 1;
+        val != 0
+    }
+    pub fn set_cm_aam(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 3_usize)) | ((val as u8) & 1) << 3_usize;
+    }
+    pub const fn cm_d(&self) -> u8 {
+        let val = (self.0 >> 4_usize) & 4;
+        val as u8
+    }
+    pub fn set_cm_d(&mut self, val: u8) {
+        self.0 = (self.0 & !(4 << 4_usize)) | ((val as u8) & 4) << 4_usize;
+    }
+}
+impl Default for CapacitanceMeasureConf {
+    fn default() -> CapacitanceMeasureConf {
+        CapacitanceMeasureConf(0)
+    }
+}
+impl From<u8> for CapacitanceMeasureConf {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<CapacitanceMeasureConf> for u8 {
+    fn from(val: CapacitanceMeasureConf) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct CapSensorControl(pub u8);
+impl CapSensorControl {
+    pub const fn cs_g(&self) -> u8 {
+        let val = (self.0 >> 0_usize) & 3;
+        val as u8
+    }
+    pub fn set_cs_g(&mut self, val: u8) {
+        self.0 = (self.0 & !(3 << 0_usize)) | ((val as u8) & 3) << 0_usize;
+    }
+    pub const fn cs_mcal(&self) -> u8 {
+        let val = (self.0 >> 3_usize) & 5;
+        val as u8
+    }
+    pub fn set_cs_mcal(&mut self, val: u8) {
+        self.0 = (self.0 & !(5 << 3_usize)) | ((val as u8) & 5) << 3_usize;
+    }
+}
+impl Default for CapSensorControl {
+    fn default() -> CapSensorControl {
+        CapSensorControl(0)
+    }
+}
+impl From<u8> for CapSensorControl {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<CapSensorControl> for u8 {
+    fn from(val: CapSensorControl) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct CapSensorDisp(pub u8);
+impl CapSensorDisp {
+    pub const fn cs_cal_err(&self) -> bool {
+        let val = (self.0 >> 1_usize) & 1;
+        val != 0
+    }
+    pub const fn cs_cal_end(&self) -> bool {
+        let val = (self.0 >> 2_usize) & 1;
+        val != 0
+    }
+    pub const fn cs_cal_val(&self) -> u8 {
+        let val = (self.0 >> 3_usize) & 5;
+        val as u8
+    }
+}
+impl Default for CapSensorDisp {
+    fn default() -> CapSensorDisp {
+        CapSensorDisp(0)
+    }
+}
+impl From<u8> for CapSensorDisp {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<CapSensorDisp> for u8 {
+    fn from(val: CapSensorDisp) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct CollisionStatus(pub u8);
+impl CollisionStatus {
+    pub const fn c_pb(&self) -> bool {
+        let val = (self.0 >> 0_usize) & 1;
+        val != 0
+    }
+    pub const fn c_bit(&self) -> u8 {
+        let val = (self.0 >> 1_usize) & 3;
+        val as u8
+    }
+    pub const fn c_byte(&self) -> u8 {
+        let val = (self.0 >> 4_usize) & 4;
+        val as u8
+    }
+}
+impl Default for CollisionStatus {
+    fn default() -> CollisionStatus {
+        CollisionStatus(0)
+    }
+}
+impl From<u8> for CollisionStatus {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<CollisionStatus> for u8 {
+    fn from(val: CollisionStatus) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct ExtFieldDetThr(pub u8);
+impl ExtFieldDetThr {
+    pub const fn rfe_t(&self) -> ThresholdDef2 {
+        let val = (self.0 >> 0_usize) & 4;
+        ThresholdDef2(val as u8)
+    }
+    pub fn set_rfe_t(&mut self, val: ThresholdDef2) {
+        self.0 = (self.0 & !(4 << 0_usize)) | ((val.0 as u8) & 4) << 0_usize;
+    }
+    pub const fn trg_l(&self) -> ThresholdDef1 {
+        let val = (self.0 >> 4_usize) & 3;
+        ThresholdDef1(val as u8)
+    }
+    pub fn set_trg_l(&mut self, val: ThresholdDef1) {
+        self.0 = (self.0 & !(3 << 4_usize)) | ((val.0 as u8) & 3) << 4_usize;
+    }
+}
+impl Default for ExtFieldDetThr {
+    fn default() -> ExtFieldDetThr {
+        ExtFieldDetThr(0)
+    }
+}
+impl From<u8> for ExtFieldDetThr {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<ExtFieldDetThr> for u8 {
+    fn from(val: ExtFieldDetThr) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct FifoStatus2(pub u8);
+impl FifoStatus2 {
+    pub const fn np_lb(&self) -> bool {
+        let val = (self.0 >> 0_usize) & 1;
+        val != 0
+    }
+    pub const fn fifo_lb(&self) -> u8 {
+        let val = (self.0 >> 1_usize) & 3;
+        val as u8
+    }
+    pub const fn fifo_ovr(&self) -> bool {
+        let val = (self.0 >> 5_usize) & 1;
+        val != 0
+    }
+    pub const fn fifo_unf(&self) -> bool {
+        let val = (self.0 >> 6_usize) & 1;
+        val != 0
+    }
+}
+impl Default for FifoStatus2 {
+    fn default() -> FifoStatus2 {
+        FifoStatus2(0)
+    }
+}
+impl From<u8> for FifoStatus2 {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<FifoStatus2> for u8 {
+    fn from(val: FifoStatus2) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct GainReduState(pub u8);
+impl GainReduState {
+    pub const fn gs_pm(&self) -> u8 {
+        let val = (self.0 >> 0_usize) & 4;
+        val as u8
+    }
+    pub const fn gs_am(&self) -> u8 {
+        let val = (self.0 >> 4_usize) & 4;
+        val as u8
+    }
+}
+impl Default for GainReduState {
+    fn default() -> GainReduState {
+        GainReduState(0)
+    }
+}
+impl From<u8> for GainReduState {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<GainReduState> for u8 {
+    fn from(val: GainReduState) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct GptNrtCtrl(pub u8);
+impl GptNrtCtrl {
+    pub const fn nrt_step(&self) -> TimerEmvControlNrtStep {
+        let val = (self.0 >> 0_usize) & 1;
+        TimerEmvControlNrtStep(val as u8)
+    }
+    pub fn set_nrt_step(&mut self, val: TimerEmvControlNrtStep) {
+        self.0 = (self.0 & !(1 << 0_usize)) | ((val.0 as u8) & 1) << 0_usize;
+    }
+    pub const fn nrt_emv(&self) -> bool {
+        let val = (self.0 >> 1_usize) & 1;
+        val != 0
+    }
+    pub fn set_nrt_emv(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 1_usize)) | ((val as u8) & 1) << 1_usize;
+    }
+    pub const fn gptc(&self) -> TimerEmvControlGptc {
+        let val = (self.0 >> 5_usize) & 3;
+        TimerEmvControlGptc(val as u8)
+    }
+    pub fn set_gptc(&mut self, val: TimerEmvControlGptc) {
+        self.0 = (self.0 & !(3 << 5_usize)) | ((val.0 as u8) & 3) << 5_usize;
+    }
+}
+impl Default for GptNrtCtrl {
+    fn default() -> GptNrtCtrl {
+        GptNrtCtrl(0)
+    }
+}
+impl From<u8> for GptNrtCtrl {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<GptNrtCtrl> for u8 {
+    fn from(val: GptNrtCtrl) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct IcIdentity(pub u8);
+impl IcIdentity {
+    pub const fn ic_rev(&self) -> IcIdentityIcRev {
+        let val = (self.0 >> 0_usize) & 3;
+        IcIdentityIcRev(val as u8)
+    }
+    pub const fn ic_type(&self) -> IcIdentityIcType {
+        let val = (self.0 >> 3_usize) & 5;
+        IcIdentityIcType(val as u8)
+    }
+}
+impl Default for IcIdentity {
+    fn default() -> IcIdentity {
+        IcIdentity(0)
+    }
+}
+impl From<u8> for IcIdentity {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<IcIdentity> for u8 {
+    fn from(val: IcIdentity) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
 pub struct IoConf1(pub u8);
 impl IoConf1 {
     pub const fn lf_clk_off(&self) -> bool {
@@ -351,7 +963,7 @@ impl IoConf1 {
 }
 impl Default for IoConf1 {
     fn default() -> IoConf1 {
-        IoConf1(8)
+        IoConf1(0)
     }
 }
 impl From<u8> for IoConf1 {
@@ -428,138 +1040,319 @@ impl From<IoConf2> for u8 {
 }
 #[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq)]
-pub struct OpControl(pub u8);
-impl OpControl {
-    pub const fn wu(&self) -> bool {
-        let val = (self.0 >> 2_usize) & 1;
-        val != 0
-    }
-    pub fn set_wu(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 2_usize)) | ((val as u8) & 1) << 2_usize;
-    }
-    pub const fn tx_en(&self) -> bool {
-        let val = (self.0 >> 3_usize) & 1;
-        val != 0
-    }
-    pub fn set_tx_en(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 3_usize)) | ((val as u8) & 1) << 3_usize;
-    }
-    pub const fn rx_man(&self) -> bool {
-        let val = (self.0 >> 4_usize) & 1;
-        val != 0
-    }
-    pub fn set_rx_man(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 4_usize)) | ((val as u8) & 1) << 4_usize;
-    }
-    pub const fn rx_chn(&self) -> bool {
-        let val = (self.0 >> 5_usize) & 1;
-        val != 0
-    }
-    pub fn set_rx_chn(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 5_usize)) | ((val as u8) & 1) << 5_usize;
-    }
-    pub const fn rx_en(&self) -> bool {
-        let val = (self.0 >> 6_usize) & 1;
-        val != 0
-    }
-    pub fn set_rx_en(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 6_usize)) | ((val as u8) & 1) << 6_usize;
-    }
-    pub const fn en(&self) -> bool {
-        let val = (self.0 >> 7_usize) & 1;
-        val != 0
-    }
-    pub fn set_en(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 7_usize)) | ((val as u8) & 1) << 7_usize;
-    }
-}
-impl Default for OpControl {
-    fn default() -> OpControl {
-        OpControl(0)
-    }
-}
-impl From<u8> for OpControl {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<OpControl> for u8 {
-    fn from(val: OpControl) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct Mode(pub u8);
-impl Mode {
-    pub const fn nfc_ar(&self) -> bool {
+pub struct IrqMain(pub u8);
+impl IrqMain {
+    pub const fn err(&self) -> bool {
         let val = (self.0 >> 0_usize) & 1;
         val != 0
     }
-    pub fn set_nfc_ar(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 0_usize)) | ((val as u8) & 1) << 0_usize;
+    pub const fn tim(&self) -> bool {
+        let val = (self.0 >> 1_usize) & 1;
+        val != 0
     }
-    pub const fn om(&self) -> ModeOm {
-        let val = (self.0 >> 3_usize) & 4;
-        ModeOm(val as u8)
+    pub const fn col(&self) -> bool {
+        let val = (self.0 >> 2_usize) & 1;
+        val != 0
     }
-    pub fn set_om(&mut self, val: ModeOm) {
-        self.0 = (self.0 & !(4 << 3_usize)) | ((val.0 as u8) & 4) << 3_usize;
+    pub const fn txe(&self) -> bool {
+        let val = (self.0 >> 3_usize) & 1;
+        val != 0
     }
-    pub const fn targ(&self) -> bool {
+    pub const fn rxe(&self) -> bool {
+        let val = (self.0 >> 4_usize) & 1;
+        val != 0
+    }
+    pub const fn rxs(&self) -> bool {
+        let val = (self.0 >> 5_usize) & 1;
+        val != 0
+    }
+    pub const fn wl(&self) -> bool {
+        let val = (self.0 >> 6_usize) & 1;
+        val != 0
+    }
+    pub const fn osc(&self) -> bool {
         let val = (self.0 >> 7_usize) & 1;
         val != 0
     }
-    pub fn set_targ(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 7_usize)) | ((val as u8) & 1) << 7_usize;
+}
+impl Default for IrqMain {
+    fn default() -> IrqMain {
+        IrqMain(0)
     }
 }
-impl Default for Mode {
-    fn default() -> Mode {
-        Mode(8)
-    }
-}
-impl From<u8> for Mode {
+impl From<u8> for IrqMain {
     fn from(val: u8) -> Self {
         Self(val)
     }
 }
-impl From<Mode> for u8 {
-    fn from(val: Mode) -> u8 {
+impl From<IrqMain> for u8 {
+    fn from(val: IrqMain) -> u8 {
         val.0
     }
 }
 #[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq)]
-pub struct BitRate(pub u8);
-impl BitRate {
-    pub const fn rxrate(&self) -> BitRateE {
-        let val = (self.0 >> 0_usize) & 4;
-        BitRateE(val as u8)
+pub struct IrqMaskErrorWup(pub u8);
+impl IrqMaskErrorWup {
+    pub const fn m_ncap(&self) -> bool {
+        let val = (self.0 >> 0_usize) & 1;
+        val != 0
     }
-    pub fn set_rxrate(&mut self, val: BitRateE) {
-        self.0 = (self.0 & !(4 << 0_usize)) | ((val.0 as u8) & 4) << 0_usize;
+    pub fn set_m_ncap(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 0_usize)) | ((val as u8) & 1) << 0_usize;
     }
-    pub const fn txrate(&self) -> BitRateE {
-        let val = (self.0 >> 4_usize) & 4;
-        BitRateE(val as u8)
+    pub const fn m_wph(&self) -> bool {
+        let val = (self.0 >> 1_usize) & 1;
+        val != 0
     }
-    pub fn set_txrate(&mut self, val: BitRateE) {
-        self.0 = (self.0 & !(4 << 4_usize)) | ((val.0 as u8) & 4) << 4_usize;
+    pub fn set_m_wph(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 1_usize)) | ((val as u8) & 1) << 1_usize;
+    }
+    pub const fn m_wam(&self) -> bool {
+        let val = (self.0 >> 2_usize) & 1;
+        val != 0
+    }
+    pub fn set_m_wam(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 2_usize)) | ((val as u8) & 1) << 2_usize;
+    }
+    pub const fn m_wt(&self) -> bool {
+        let val = (self.0 >> 3_usize) & 1;
+        val != 0
+    }
+    pub fn set_m_wt(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 3_usize)) | ((val as u8) & 1) << 3_usize;
+    }
+    pub const fn m_err1(&self) -> bool {
+        let val = (self.0 >> 4_usize) & 1;
+        val != 0
+    }
+    pub fn set_m_err1(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 4_usize)) | ((val as u8) & 1) << 4_usize;
+    }
+    pub const fn m_err2(&self) -> bool {
+        let val = (self.0 >> 5_usize) & 1;
+        val != 0
+    }
+    pub fn set_m_err2(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 5_usize)) | ((val as u8) & 1) << 5_usize;
+    }
+    pub const fn m_par(&self) -> bool {
+        let val = (self.0 >> 6_usize) & 1;
+        val != 0
+    }
+    pub fn set_m_par(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 6_usize)) | ((val as u8) & 1) << 6_usize;
+    }
+    pub const fn m_crc(&self) -> bool {
+        let val = (self.0 >> 7_usize) & 1;
+        val != 0
+    }
+    pub fn set_m_crc(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 7_usize)) | ((val as u8) & 1) << 7_usize;
     }
 }
-impl Default for BitRate {
-    fn default() -> BitRate {
-        BitRate(0)
+impl Default for IrqMaskErrorWup {
+    fn default() -> IrqMaskErrorWup {
+        IrqMaskErrorWup(0)
     }
 }
-impl From<u8> for BitRate {
+impl From<u8> for IrqMaskErrorWup {
     fn from(val: u8) -> Self {
         Self(val)
     }
 }
-impl From<BitRate> for u8 {
-    fn from(val: BitRate) -> u8 {
+impl From<IrqMaskErrorWup> for u8 {
+    fn from(val: IrqMaskErrorWup) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct IrqMaskMain(pub u8);
+impl IrqMaskMain {
+    pub const fn m_col(&self) -> bool {
+        let val = (self.0 >> 2_usize) & 1;
+        val != 0
+    }
+    pub fn set_m_col(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 2_usize)) | ((val as u8) & 1) << 2_usize;
+    }
+    pub const fn m_txe(&self) -> bool {
+        let val = (self.0 >> 3_usize) & 1;
+        val != 0
+    }
+    pub fn set_m_txe(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 3_usize)) | ((val as u8) & 1) << 3_usize;
+    }
+    pub const fn m_rxe(&self) -> bool {
+        let val = (self.0 >> 4_usize) & 1;
+        val != 0
+    }
+    pub fn set_m_rxe(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 4_usize)) | ((val as u8) & 1) << 4_usize;
+    }
+    pub const fn m_rxs(&self) -> bool {
+        let val = (self.0 >> 5_usize) & 1;
+        val != 0
+    }
+    pub fn set_m_rxs(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 5_usize)) | ((val as u8) & 1) << 5_usize;
+    }
+    pub const fn m_wl(&self) -> bool {
+        let val = (self.0 >> 6_usize) & 1;
+        val != 0
+    }
+    pub fn set_m_wl(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 6_usize)) | ((val as u8) & 1) << 6_usize;
+    }
+    pub const fn m_osc(&self) -> bool {
+        let val = (self.0 >> 7_usize) & 1;
+        val != 0
+    }
+    pub fn set_m_osc(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 7_usize)) | ((val as u8) & 1) << 7_usize;
+    }
+}
+impl Default for IrqMaskMain {
+    fn default() -> IrqMaskMain {
+        IrqMaskMain(0)
+    }
+}
+impl From<u8> for IrqMaskMain {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<IrqMaskMain> for u8 {
+    fn from(val: IrqMaskMain) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct IrqMaskTimerNfc(pub u8);
+impl IrqMaskTimerNfc {
+    pub const fn m_nfct(&self) -> bool {
+        let val = (self.0 >> 0_usize) & 1;
+        val != 0
+    }
+    pub fn set_m_nfct(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 0_usize)) | ((val as u8) & 1) << 0_usize;
+    }
+    pub const fn m_cat(&self) -> bool {
+        let val = (self.0 >> 1_usize) & 1;
+        val != 0
+    }
+    pub fn set_m_cat(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 1_usize)) | ((val as u8) & 1) << 1_usize;
+    }
+    pub const fn m_cac(&self) -> bool {
+        let val = (self.0 >> 2_usize) & 1;
+        val != 0
+    }
+    pub fn set_m_cac(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 2_usize)) | ((val as u8) & 1) << 2_usize;
+    }
+    pub const fn m_eof(&self) -> bool {
+        let val = (self.0 >> 3_usize) & 1;
+        val != 0
+    }
+    pub fn set_m_eof(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 3_usize)) | ((val as u8) & 1) << 3_usize;
+    }
+    pub const fn m_eon(&self) -> bool {
+        let val = (self.0 >> 4_usize) & 1;
+        val != 0
+    }
+    pub fn set_m_eon(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 4_usize)) | ((val as u8) & 1) << 4_usize;
+    }
+    pub const fn m_gpe(&self) -> bool {
+        let val = (self.0 >> 5_usize) & 1;
+        val != 0
+    }
+    pub fn set_m_gpe(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 5_usize)) | ((val as u8) & 1) << 5_usize;
+    }
+    pub const fn m_nre(&self) -> bool {
+        let val = (self.0 >> 6_usize) & 1;
+        val != 0
+    }
+    pub fn set_m_nre(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 6_usize)) | ((val as u8) & 1) << 6_usize;
+    }
+    pub const fn m_dcd(&self) -> bool {
+        let val = (self.0 >> 7_usize) & 1;
+        val != 0
+    }
+    pub fn set_m_dcd(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 7_usize)) | ((val as u8) & 1) << 7_usize;
+    }
+}
+impl Default for IrqMaskTimerNfc {
+    fn default() -> IrqMaskTimerNfc {
+        IrqMaskTimerNfc(0)
+    }
+}
+impl From<u8> for IrqMaskTimerNfc {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<IrqMaskTimerNfc> for u8 {
+    fn from(val: IrqMaskTimerNfc) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct IrqTimerNfc(pub u8);
+impl IrqTimerNfc {
+    pub const fn nfct(&self) -> bool {
+        let val = (self.0 >> 0_usize) & 1;
+        val != 0
+    }
+    pub const fn cat(&self) -> bool {
+        let val = (self.0 >> 1_usize) & 1;
+        val != 0
+    }
+    pub const fn cac(&self) -> bool {
+        let val = (self.0 >> 2_usize) & 1;
+        val != 0
+    }
+    pub const fn eof(&self) -> bool {
+        let val = (self.0 >> 3_usize) & 1;
+        val != 0
+    }
+    pub const fn eon(&self) -> bool {
+        let val = (self.0 >> 4_usize) & 1;
+        val != 0
+    }
+    pub const fn gpe(&self) -> bool {
+        let val = (self.0 >> 5_usize) & 1;
+        val != 0
+    }
+    pub const fn nre(&self) -> bool {
+        let val = (self.0 >> 6_usize) & 1;
+        val != 0
+    }
+    pub const fn dcd(&self) -> bool {
+        let val = (self.0 >> 7_usize) & 1;
+        val != 0
+    }
+}
+impl Default for IrqTimerNfc {
+    fn default() -> IrqTimerNfc {
+        IrqTimerNfc(0)
+    }
+}
+impl From<u8> for IrqTimerNfc {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<IrqTimerNfc> for u8 {
+    fn from(val: IrqTimerNfc) -> u8 {
         val.0
     }
 }
@@ -744,111 +1537,543 @@ impl From<Iso14443B2> for u8 {
 }
 #[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq)]
-pub struct StreamMode(pub u8);
-impl StreamMode {
-    pub const fn stx(&self) -> StreamModeStx {
-        let val = (self.0 >> 0_usize) & 3;
-        StreamModeStx(val as u8)
+pub struct MaskRxTimer(pub u8);
+impl MaskRxTimer {
+    pub const fn mrt0(&self) -> bool {
+        let val = (self.0 >> 0_usize) & 1;
+        val != 0
     }
-    pub fn set_stx(&mut self, val: StreamModeStx) {
-        self.0 = (self.0 & !(3 << 0_usize)) | ((val.0 as u8) & 3) << 0_usize;
+    pub fn set_mrt0(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 0_usize)) | ((val as u8) & 1) << 0_usize;
     }
-    pub const fn scp(&self) -> StreamModeScp {
-        let val = (self.0 >> 3_usize) & 2;
-        StreamModeScp(val as u8)
+    pub const fn mrt1(&self) -> bool {
+        let val = (self.0 >> 1_usize) & 1;
+        val != 0
     }
-    pub fn set_scp(&mut self, val: StreamModeScp) {
-        self.0 = (self.0 & !(2 << 3_usize)) | ((val.0 as u8) & 2) << 3_usize;
+    pub fn set_mrt1(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 1_usize)) | ((val as u8) & 1) << 1_usize;
     }
-    pub const fn scf(&self) -> StreamModeScf {
-        let val = (self.0 >> 5_usize) & 2;
-        StreamModeScf(val as u8)
+    pub const fn mrt2(&self) -> bool {
+        let val = (self.0 >> 2_usize) & 1;
+        val != 0
     }
-    pub fn set_scf(&mut self, val: StreamModeScf) {
-        self.0 = (self.0 & !(2 << 5_usize)) | ((val.0 as u8) & 2) << 5_usize;
+    pub fn set_mrt2(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 2_usize)) | ((val as u8) & 1) << 2_usize;
+    }
+    pub const fn mrt3(&self) -> bool {
+        let val = (self.0 >> 3_usize) & 1;
+        val != 0
+    }
+    pub fn set_mrt3(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 3_usize)) | ((val as u8) & 1) << 3_usize;
+    }
+    pub const fn mrt4(&self) -> bool {
+        let val = (self.0 >> 4_usize) & 1;
+        val != 0
+    }
+    pub fn set_mrt4(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 4_usize)) | ((val as u8) & 1) << 4_usize;
+    }
+    pub const fn mrt5(&self) -> bool {
+        let val = (self.0 >> 5_usize) & 1;
+        val != 0
+    }
+    pub fn set_mrt5(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 5_usize)) | ((val as u8) & 1) << 5_usize;
+    }
+    pub const fn mrt6(&self) -> bool {
+        let val = (self.0 >> 6_usize) & 1;
+        val != 0
+    }
+    pub fn set_mrt6(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 6_usize)) | ((val as u8) & 1) << 6_usize;
+    }
+    pub const fn mrt7(&self) -> bool {
+        let val = (self.0 >> 7_usize) & 1;
+        val != 0
+    }
+    pub fn set_mrt7(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 7_usize)) | ((val as u8) & 1) << 7_usize;
     }
 }
-impl Default for StreamMode {
-    fn default() -> StreamMode {
-        StreamMode(0)
+impl Default for MaskRxTimer {
+    fn default() -> MaskRxTimer {
+        MaskRxTimer(0)
     }
 }
-impl From<u8> for StreamMode {
+impl From<u8> for MaskRxTimer {
     fn from(val: u8) -> Self {
         Self(val)
     }
 }
-impl From<StreamMode> for u8 {
-    fn from(val: StreamMode) -> u8 {
+impl From<MaskRxTimer> for u8 {
+    fn from(val: MaskRxTimer) -> u8 {
         val.0
     }
 }
 #[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq)]
-pub struct Aux(pub u8);
-impl Aux {
-    pub const fn nfc_n(&self) -> u8 {
-        let val = (self.0 >> 0_usize) & 2;
-        val as u8
-    }
-    pub fn set_nfc_n(&mut self, val: u8) {
-        self.0 = (self.0 & !(2 << 0_usize)) | ((val as u8) & 2) << 0_usize;
-    }
-    pub const fn rx_tol(&self) -> bool {
-        let val = (self.0 >> 2_usize) & 1;
+pub struct Mode(pub u8);
+impl Mode {
+    pub const fn nfc_ar(&self) -> bool {
+        let val = (self.0 >> 0_usize) & 1;
         val != 0
     }
-    pub fn set_rx_tol(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 2_usize)) | ((val as u8) & 1) << 2_usize;
+    pub fn set_nfc_ar(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 0_usize)) | ((val as u8) & 1) << 0_usize;
     }
-    pub const fn ook_hr(&self) -> bool {
-        let val = (self.0 >> 3_usize) & 1;
-        val != 0
+    pub const fn om(&self) -> ModeOm {
+        let val = (self.0 >> 3_usize) & 4;
+        ModeOm(val as u8)
     }
-    pub fn set_ook_hr(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 3_usize)) | ((val as u8) & 1) << 3_usize;
+    pub fn set_om(&mut self, val: ModeOm) {
+        self.0 = (self.0 & !(4 << 3_usize)) | ((val.0 as u8) & 4) << 3_usize;
     }
-    pub const fn en_fd(&self) -> bool {
-        let val = (self.0 >> 4_usize) & 1;
-        val != 0
-    }
-    pub fn set_en_fd(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 4_usize)) | ((val as u8) & 1) << 4_usize;
-    }
-    pub const fn tr_am(&self) -> bool {
-        let val = (self.0 >> 5_usize) & 1;
-        val != 0
-    }
-    pub fn set_tr_am(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 5_usize)) | ((val as u8) & 1) << 5_usize;
-    }
-    pub const fn crc_2_fifo(&self) -> bool {
-        let val = (self.0 >> 6_usize) & 1;
-        val != 0
-    }
-    pub fn set_crc_2_fifo(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 6_usize)) | ((val as u8) & 1) << 6_usize;
-    }
-    pub const fn no_crc_rx(&self) -> bool {
+    pub const fn targ(&self) -> bool {
         let val = (self.0 >> 7_usize) & 1;
         val != 0
     }
-    pub fn set_no_crc_rx(&mut self, val: bool) {
+    pub fn set_targ(&mut self, val: bool) {
         self.0 = (self.0 & !(1 << 7_usize)) | ((val as u8) & 1) << 7_usize;
     }
 }
-impl Default for Aux {
-    fn default() -> Aux {
-        Aux(0)
+impl Default for Mode {
+    fn default() -> Mode {
+        Mode(0)
     }
 }
-impl From<u8> for Aux {
+impl From<u8> for Mode {
     fn from(val: u8) -> Self {
         Self(val)
     }
 }
-impl From<Aux> for u8 {
-    fn from(val: Aux) -> u8 {
+impl From<Mode> for u8 {
+    fn from(val: Mode) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct Nfcip1BitRateDisp(pub u8);
+impl Nfcip1BitRateDisp {
+    pub const fn nfc_rate(&self) -> u8 {
+        let val = (self.0 >> 4_usize) & 4;
+        val as u8
+    }
+}
+impl Default for Nfcip1BitRateDisp {
+    fn default() -> Nfcip1BitRateDisp {
+        Nfcip1BitRateDisp(0)
+    }
+}
+impl From<u8> for Nfcip1BitRateDisp {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<Nfcip1BitRateDisp> for u8 {
+    fn from(val: Nfcip1BitRateDisp) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct NoResponseTimer1(pub u8);
+impl NoResponseTimer1 {
+    pub const fn nrt8(&self) -> bool {
+        let val = (self.0 >> 0_usize) & 1;
+        val != 0
+    }
+    pub fn set_nrt8(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 0_usize)) | ((val as u8) & 1) << 0_usize;
+    }
+    pub const fn nrt9(&self) -> bool {
+        let val = (self.0 >> 1_usize) & 1;
+        val != 0
+    }
+    pub fn set_nrt9(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 1_usize)) | ((val as u8) & 1) << 1_usize;
+    }
+    pub const fn nrt10(&self) -> bool {
+        let val = (self.0 >> 2_usize) & 1;
+        val != 0
+    }
+    pub fn set_nrt10(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 2_usize)) | ((val as u8) & 1) << 2_usize;
+    }
+    pub const fn nrt11(&self) -> bool {
+        let val = (self.0 >> 3_usize) & 1;
+        val != 0
+    }
+    pub fn set_nrt11(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 3_usize)) | ((val as u8) & 1) << 3_usize;
+    }
+    pub const fn nrt12(&self) -> bool {
+        let val = (self.0 >> 4_usize) & 1;
+        val != 0
+    }
+    pub fn set_nrt12(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 4_usize)) | ((val as u8) & 1) << 4_usize;
+    }
+    pub const fn nrt13(&self) -> bool {
+        let val = (self.0 >> 5_usize) & 1;
+        val != 0
+    }
+    pub fn set_nrt13(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 5_usize)) | ((val as u8) & 1) << 5_usize;
+    }
+    pub const fn nrt14(&self) -> bool {
+        let val = (self.0 >> 6_usize) & 1;
+        val != 0
+    }
+    pub fn set_nrt14(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 6_usize)) | ((val as u8) & 1) << 6_usize;
+    }
+    pub const fn nrt15(&self) -> bool {
+        let val = (self.0 >> 7_usize) & 1;
+        val != 0
+    }
+    pub fn set_nrt15(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 7_usize)) | ((val as u8) & 1) << 7_usize;
+    }
+}
+impl Default for NoResponseTimer1 {
+    fn default() -> NoResponseTimer1 {
+        NoResponseTimer1(0)
+    }
+}
+impl From<u8> for NoResponseTimer1 {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<NoResponseTimer1> for u8 {
+    fn from(val: NoResponseTimer1) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct NumTxBytes2(pub u8);
+impl NumTxBytes2 {
+    pub const fn nbtx(&self) -> u8 {
+        let val = (self.0 >> 0_usize) & 3;
+        val as u8
+    }
+    pub fn set_nbtx(&mut self, val: u8) {
+        self.0 = (self.0 & !(3 << 0_usize)) | ((val as u8) & 3) << 0_usize;
+    }
+    pub const fn ntx(&self) -> u8 {
+        let val = (self.0 >> 3_usize) & 5;
+        val as u8
+    }
+    pub fn set_ntx(&mut self, val: u8) {
+        self.0 = (self.0 & !(5 << 3_usize)) | ((val as u8) & 5) << 3_usize;
+    }
+}
+impl Default for NumTxBytes2 {
+    fn default() -> NumTxBytes2 {
+        NumTxBytes2(0)
+    }
+}
+impl From<u8> for NumTxBytes2 {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<NumTxBytes2> for u8 {
+    fn from(val: NumTxBytes2) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct OpControl(pub u8);
+impl OpControl {
+    pub const fn wu(&self) -> bool {
+        let val = (self.0 >> 2_usize) & 1;
+        val != 0
+    }
+    pub fn set_wu(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 2_usize)) | ((val as u8) & 1) << 2_usize;
+    }
+    pub const fn tx_en(&self) -> bool {
+        let val = (self.0 >> 3_usize) & 1;
+        val != 0
+    }
+    pub fn set_tx_en(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 3_usize)) | ((val as u8) & 1) << 3_usize;
+    }
+    pub const fn rx_man(&self) -> bool {
+        let val = (self.0 >> 4_usize) & 1;
+        val != 0
+    }
+    pub fn set_rx_man(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 4_usize)) | ((val as u8) & 1) << 4_usize;
+    }
+    pub const fn rx_chn(&self) -> bool {
+        let val = (self.0 >> 5_usize) & 1;
+        val != 0
+    }
+    pub fn set_rx_chn(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 5_usize)) | ((val as u8) & 1) << 5_usize;
+    }
+    pub const fn rx_en(&self) -> bool {
+        let val = (self.0 >> 6_usize) & 1;
+        val != 0
+    }
+    pub fn set_rx_en(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 6_usize)) | ((val as u8) & 1) << 6_usize;
+    }
+    pub const fn en(&self) -> bool {
+        let val = (self.0 >> 7_usize) & 1;
+        val != 0
+    }
+    pub fn set_en(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 7_usize)) | ((val as u8) & 1) << 7_usize;
+    }
+}
+impl Default for OpControl {
+    fn default() -> OpControl {
+        OpControl(0)
+    }
+}
+impl From<u8> for OpControl {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<OpControl> for u8 {
+    fn from(val: OpControl) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct PhaseMeasureConf(pub u8);
+impl PhaseMeasureConf {
+    pub const fn pm_ae(&self) -> bool {
+        let val = (self.0 >> 0_usize) & 1;
+        val != 0
+    }
+    pub fn set_pm_ae(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 0_usize)) | ((val as u8) & 1) << 0_usize;
+    }
+    pub const fn pm_aew(&self) -> u8 {
+        let val = (self.0 >> 1_usize) & 2;
+        val as u8
+    }
+    pub fn set_pm_aew(&mut self, val: u8) {
+        self.0 = (self.0 & !(2 << 1_usize)) | ((val as u8) & 2) << 1_usize;
+    }
+    pub const fn pm_aam(&self) -> bool {
+        let val = (self.0 >> 3_usize) & 1;
+        val != 0
+    }
+    pub fn set_pm_aam(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 3_usize)) | ((val as u8) & 1) << 3_usize;
+    }
+    pub const fn pm_d(&self) -> u8 {
+        let val = (self.0 >> 4_usize) & 4;
+        val as u8
+    }
+    pub fn set_pm_d(&mut self, val: u8) {
+        self.0 = (self.0 & !(4 << 4_usize)) | ((val as u8) & 4) << 4_usize;
+    }
+}
+impl Default for PhaseMeasureConf {
+    fn default() -> PhaseMeasureConf {
+        PhaseMeasureConf(0)
+    }
+}
+impl From<u8> for PhaseMeasureConf {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<PhaseMeasureConf> for u8 {
+    fn from(val: PhaseMeasureConf) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct RegulatorAndTimDisp(pub u8);
+impl RegulatorAndTimDisp {
+    pub const fn mrt_on(&self) -> bool {
+        let val = (self.0 >> 0_usize) & 1;
+        val != 0
+    }
+    pub const fn nrt_on(&self) -> bool {
+        let val = (self.0 >> 1_usize) & 1;
+        val != 0
+    }
+    pub const fn gpt_on(&self) -> bool {
+        let val = (self.0 >> 2_usize) & 1;
+        val != 0
+    }
+    pub const fn reg(&self) -> u8 {
+        let val = (self.0 >> 4_usize) & 4;
+        val as u8
+    }
+}
+impl Default for RegulatorAndTimDisp {
+    fn default() -> RegulatorAndTimDisp {
+        RegulatorAndTimDisp(0)
+    }
+}
+impl From<u8> for RegulatorAndTimDisp {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<RegulatorAndTimDisp> for u8 {
+    fn from(val: RegulatorAndTimDisp) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct RegulatorVoltControl(pub u8);
+impl RegulatorVoltControl {
+    pub const fn mpsv(&self) -> u8 {
+        let val = (self.0 >> 1_usize) & 2;
+        val as u8
+    }
+    pub fn set_mpsv(&mut self, val: u8) {
+        self.0 = (self.0 & !(2 << 1_usize)) | ((val as u8) & 2) << 1_usize;
+    }
+    pub const fn rege(&self) -> u8 {
+        let val = (self.0 >> 3_usize) & 4;
+        val as u8
+    }
+    pub fn set_rege(&mut self, val: u8) {
+        self.0 = (self.0 & !(4 << 3_usize)) | ((val as u8) & 4) << 3_usize;
+    }
+    pub const fn reg_s(&self) -> bool {
+        let val = (self.0 >> 7_usize) & 1;
+        val != 0
+    }
+    pub fn set_reg_s(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 7_usize)) | ((val as u8) & 1) << 7_usize;
+    }
+}
+impl Default for RegulatorVoltControl {
+    fn default() -> RegulatorVoltControl {
+        RegulatorVoltControl(0)
+    }
+}
+impl From<u8> for RegulatorVoltControl {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<RegulatorVoltControl> for u8 {
+    fn from(val: RegulatorVoltControl) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct RfoAmLevelDef(pub u8);
+impl RfoAmLevelDef {
+    pub const fn d0(&self) -> bool {
+        let val = (self.0 >> 0_usize) & 1;
+        val != 0
+    }
+    pub fn set_d0(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 0_usize)) | ((val as u8) & 1) << 0_usize;
+    }
+    pub const fn d1(&self) -> bool {
+        let val = (self.0 >> 1_usize) & 1;
+        val != 0
+    }
+    pub fn set_d1(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 1_usize)) | ((val as u8) & 1) << 1_usize;
+    }
+    pub const fn d2(&self) -> bool {
+        let val = (self.0 >> 2_usize) & 1;
+        val != 0
+    }
+    pub fn set_d2(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 2_usize)) | ((val as u8) & 1) << 2_usize;
+    }
+    pub const fn d3(&self) -> bool {
+        let val = (self.0 >> 3_usize) & 1;
+        val != 0
+    }
+    pub fn set_d3(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 3_usize)) | ((val as u8) & 1) << 3_usize;
+    }
+    pub const fn d4(&self) -> bool {
+        let val = (self.0 >> 4_usize) & 1;
+        val != 0
+    }
+    pub fn set_d4(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 4_usize)) | ((val as u8) & 1) << 4_usize;
+    }
+    pub const fn d5(&self) -> bool {
+        let val = (self.0 >> 5_usize) & 1;
+        val != 0
+    }
+    pub fn set_d5(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 5_usize)) | ((val as u8) & 1) << 5_usize;
+    }
+    pub const fn d6(&self) -> bool {
+        let val = (self.0 >> 6_usize) & 1;
+        val != 0
+    }
+    pub fn set_d6(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 6_usize)) | ((val as u8) & 1) << 6_usize;
+    }
+    pub const fn d7(&self) -> bool {
+        let val = (self.0 >> 7_usize) & 1;
+        val != 0
+    }
+    pub fn set_d7(&mut self, val: bool) {
+        self.0 = (self.0 & !(1 << 7_usize)) | ((val as u8) & 1) << 7_usize;
+    }
+}
+impl Default for RfoAmLevelDef {
+    fn default() -> RfoAmLevelDef {
+        RfoAmLevelDef(0)
+    }
+}
+impl From<u8> for RfoAmLevelDef {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<RfoAmLevelDef> for u8 {
+    fn from(val: RfoAmLevelDef) -> u8 {
+        val.0
+    }
+}
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct RssiResult(pub u8);
+impl RssiResult {
+    pub const fn rssi_pm(&self) -> u8 {
+        let val = (self.0 >> 0_usize) & 4;
+        val as u8
+    }
+    pub const fn rssi_am(&self) -> u8 {
+        let val = (self.0 >> 4_usize) & 4;
+        val as u8
+    }
+}
+impl Default for RssiResult {
+    fn default() -> RssiResult {
+        RssiResult(0)
+    }
+}
+impl From<u8> for RssiResult {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<RssiResult> for u8 {
+    fn from(val: RssiResult) -> u8 {
         val.0
     }
 }
@@ -1074,1095 +2299,42 @@ impl From<RxConf4> for u8 {
 }
 #[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq)]
-pub struct MaskRxTimer(pub u8);
-impl MaskRxTimer {
-    pub const fn mrt0(&self) -> bool {
-        let val = (self.0 >> 0_usize) & 1;
-        val != 0
-    }
-    pub fn set_mrt0(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 0_usize)) | ((val as u8) & 1) << 0_usize;
-    }
-    pub const fn mrt1(&self) -> bool {
-        let val = (self.0 >> 1_usize) & 1;
-        val != 0
-    }
-    pub fn set_mrt1(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 1_usize)) | ((val as u8) & 1) << 1_usize;
-    }
-    pub const fn mrt2(&self) -> bool {
-        let val = (self.0 >> 2_usize) & 1;
-        val != 0
-    }
-    pub fn set_mrt2(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 2_usize)) | ((val as u8) & 1) << 2_usize;
-    }
-    pub const fn mrt3(&self) -> bool {
-        let val = (self.0 >> 3_usize) & 1;
-        val != 0
-    }
-    pub fn set_mrt3(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 3_usize)) | ((val as u8) & 1) << 3_usize;
-    }
-    pub const fn mrt4(&self) -> bool {
-        let val = (self.0 >> 4_usize) & 1;
-        val != 0
-    }
-    pub fn set_mrt4(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 4_usize)) | ((val as u8) & 1) << 4_usize;
-    }
-    pub const fn mrt5(&self) -> bool {
-        let val = (self.0 >> 5_usize) & 1;
-        val != 0
-    }
-    pub fn set_mrt5(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 5_usize)) | ((val as u8) & 1) << 5_usize;
-    }
-    pub const fn mrt6(&self) -> bool {
-        let val = (self.0 >> 6_usize) & 1;
-        val != 0
-    }
-    pub fn set_mrt6(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 6_usize)) | ((val as u8) & 1) << 6_usize;
-    }
-    pub const fn mrt7(&self) -> bool {
-        let val = (self.0 >> 7_usize) & 1;
-        val != 0
-    }
-    pub fn set_mrt7(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 7_usize)) | ((val as u8) & 1) << 7_usize;
-    }
-}
-impl Default for MaskRxTimer {
-    fn default() -> MaskRxTimer {
-        MaskRxTimer(0)
-    }
-}
-impl From<u8> for MaskRxTimer {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<MaskRxTimer> for u8 {
-    fn from(val: MaskRxTimer) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct NoResponseTimer1(pub u8);
-impl NoResponseTimer1 {
-    pub const fn nrt8(&self) -> bool {
-        let val = (self.0 >> 0_usize) & 1;
-        val != 0
-    }
-    pub fn set_nrt8(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 0_usize)) | ((val as u8) & 1) << 0_usize;
-    }
-    pub const fn nrt9(&self) -> bool {
-        let val = (self.0 >> 1_usize) & 1;
-        val != 0
-    }
-    pub fn set_nrt9(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 1_usize)) | ((val as u8) & 1) << 1_usize;
-    }
-    pub const fn nrt10(&self) -> bool {
-        let val = (self.0 >> 2_usize) & 1;
-        val != 0
-    }
-    pub fn set_nrt10(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 2_usize)) | ((val as u8) & 1) << 2_usize;
-    }
-    pub const fn nrt11(&self) -> bool {
-        let val = (self.0 >> 3_usize) & 1;
-        val != 0
-    }
-    pub fn set_nrt11(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 3_usize)) | ((val as u8) & 1) << 3_usize;
-    }
-    pub const fn nrt12(&self) -> bool {
-        let val = (self.0 >> 4_usize) & 1;
-        val != 0
-    }
-    pub fn set_nrt12(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 4_usize)) | ((val as u8) & 1) << 4_usize;
-    }
-    pub const fn nrt13(&self) -> bool {
-        let val = (self.0 >> 5_usize) & 1;
-        val != 0
-    }
-    pub fn set_nrt13(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 5_usize)) | ((val as u8) & 1) << 5_usize;
-    }
-    pub const fn nrt14(&self) -> bool {
-        let val = (self.0 >> 6_usize) & 1;
-        val != 0
-    }
-    pub fn set_nrt14(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 6_usize)) | ((val as u8) & 1) << 6_usize;
-    }
-    pub const fn nrt15(&self) -> bool {
-        let val = (self.0 >> 7_usize) & 1;
-        val != 0
-    }
-    pub fn set_nrt15(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 7_usize)) | ((val as u8) & 1) << 7_usize;
-    }
-}
-impl Default for NoResponseTimer1 {
-    fn default() -> NoResponseTimer1 {
-        NoResponseTimer1(0)
-    }
-}
-impl From<u8> for NoResponseTimer1 {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<NoResponseTimer1> for u8 {
-    fn from(val: NoResponseTimer1) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct GptNrtCtrl(pub u8);
-impl GptNrtCtrl {
-    pub const fn nrt_step(&self) -> TimerEmvControlNrtStep {
-        let val = (self.0 >> 0_usize) & 1;
-        TimerEmvControlNrtStep(val as u8)
-    }
-    pub fn set_nrt_step(&mut self, val: TimerEmvControlNrtStep) {
-        self.0 = (self.0 & !(1 << 0_usize)) | ((val.0 as u8) & 1) << 0_usize;
-    }
-    pub const fn nrt_emv(&self) -> bool {
-        let val = (self.0 >> 1_usize) & 1;
-        val != 0
-    }
-    pub fn set_nrt_emv(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 1_usize)) | ((val as u8) & 1) << 1_usize;
-    }
-    pub const fn gptc(&self) -> TimerEmvControlGptc {
-        let val = (self.0 >> 5_usize) & 3;
-        TimerEmvControlGptc(val as u8)
-    }
-    pub fn set_gptc(&mut self, val: TimerEmvControlGptc) {
-        self.0 = (self.0 & !(3 << 5_usize)) | ((val.0 as u8) & 3) << 5_usize;
-    }
-}
-impl Default for GptNrtCtrl {
-    fn default() -> GptNrtCtrl {
-        GptNrtCtrl(0)
-    }
-}
-impl From<u8> for GptNrtCtrl {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<GptNrtCtrl> for u8 {
-    fn from(val: GptNrtCtrl) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct IrqMaskMain(pub u8);
-impl IrqMaskMain {
-    pub const fn m_col(&self) -> bool {
-        let val = (self.0 >> 2_usize) & 1;
-        val != 0
-    }
-    pub fn set_m_col(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 2_usize)) | ((val as u8) & 1) << 2_usize;
-    }
-    pub const fn m_txe(&self) -> bool {
-        let val = (self.0 >> 3_usize) & 1;
-        val != 0
-    }
-    pub fn set_m_txe(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 3_usize)) | ((val as u8) & 1) << 3_usize;
-    }
-    pub const fn m_rxe(&self) -> bool {
-        let val = (self.0 >> 4_usize) & 1;
-        val != 0
-    }
-    pub fn set_m_rxe(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 4_usize)) | ((val as u8) & 1) << 4_usize;
-    }
-    pub const fn m_rxs(&self) -> bool {
-        let val = (self.0 >> 5_usize) & 1;
-        val != 0
-    }
-    pub fn set_m_rxs(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 5_usize)) | ((val as u8) & 1) << 5_usize;
-    }
-    pub const fn m_wl(&self) -> bool {
-        let val = (self.0 >> 6_usize) & 1;
-        val != 0
-    }
-    pub fn set_m_wl(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 6_usize)) | ((val as u8) & 1) << 6_usize;
-    }
-    pub const fn m_osc(&self) -> bool {
-        let val = (self.0 >> 7_usize) & 1;
-        val != 0
-    }
-    pub fn set_m_osc(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 7_usize)) | ((val as u8) & 1) << 7_usize;
-    }
-}
-impl Default for IrqMaskMain {
-    fn default() -> IrqMaskMain {
-        IrqMaskMain(0)
-    }
-}
-impl From<u8> for IrqMaskMain {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<IrqMaskMain> for u8 {
-    fn from(val: IrqMaskMain) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct IrqMaskTimerNfc(pub u8);
-impl IrqMaskTimerNfc {
-    pub const fn m_nfct(&self) -> bool {
-        let val = (self.0 >> 0_usize) & 1;
-        val != 0
-    }
-    pub fn set_m_nfct(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 0_usize)) | ((val as u8) & 1) << 0_usize;
-    }
-    pub const fn m_cat(&self) -> bool {
-        let val = (self.0 >> 1_usize) & 1;
-        val != 0
-    }
-    pub fn set_m_cat(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 1_usize)) | ((val as u8) & 1) << 1_usize;
-    }
-    pub const fn m_cac(&self) -> bool {
-        let val = (self.0 >> 2_usize) & 1;
-        val != 0
-    }
-    pub fn set_m_cac(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 2_usize)) | ((val as u8) & 1) << 2_usize;
-    }
-    pub const fn m_eof(&self) -> bool {
-        let val = (self.0 >> 3_usize) & 1;
-        val != 0
-    }
-    pub fn set_m_eof(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 3_usize)) | ((val as u8) & 1) << 3_usize;
-    }
-    pub const fn m_eon(&self) -> bool {
-        let val = (self.0 >> 4_usize) & 1;
-        val != 0
-    }
-    pub fn set_m_eon(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 4_usize)) | ((val as u8) & 1) << 4_usize;
-    }
-    pub const fn m_gpe(&self) -> bool {
-        let val = (self.0 >> 5_usize) & 1;
-        val != 0
-    }
-    pub fn set_m_gpe(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 5_usize)) | ((val as u8) & 1) << 5_usize;
-    }
-    pub const fn m_nre(&self) -> bool {
-        let val = (self.0 >> 6_usize) & 1;
-        val != 0
-    }
-    pub fn set_m_nre(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 6_usize)) | ((val as u8) & 1) << 6_usize;
-    }
-    pub const fn m_dcd(&self) -> bool {
-        let val = (self.0 >> 7_usize) & 1;
-        val != 0
-    }
-    pub fn set_m_dcd(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 7_usize)) | ((val as u8) & 1) << 7_usize;
-    }
-}
-impl Default for IrqMaskTimerNfc {
-    fn default() -> IrqMaskTimerNfc {
-        IrqMaskTimerNfc(0)
-    }
-}
-impl From<u8> for IrqMaskTimerNfc {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<IrqMaskTimerNfc> for u8 {
-    fn from(val: IrqMaskTimerNfc) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct IrqMaskErrorWup(pub u8);
-impl IrqMaskErrorWup {
-    pub const fn m_ncap(&self) -> bool {
-        let val = (self.0 >> 0_usize) & 1;
-        val != 0
-    }
-    pub fn set_m_ncap(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 0_usize)) | ((val as u8) & 1) << 0_usize;
-    }
-    pub const fn m_wph(&self) -> bool {
-        let val = (self.0 >> 1_usize) & 1;
-        val != 0
-    }
-    pub fn set_m_wph(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 1_usize)) | ((val as u8) & 1) << 1_usize;
-    }
-    pub const fn m_wam(&self) -> bool {
-        let val = (self.0 >> 2_usize) & 1;
-        val != 0
-    }
-    pub fn set_m_wam(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 2_usize)) | ((val as u8) & 1) << 2_usize;
-    }
-    pub const fn m_wt(&self) -> bool {
-        let val = (self.0 >> 3_usize) & 1;
-        val != 0
-    }
-    pub fn set_m_wt(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 3_usize)) | ((val as u8) & 1) << 3_usize;
-    }
-    pub const fn m_err1(&self) -> bool {
-        let val = (self.0 >> 4_usize) & 1;
-        val != 0
-    }
-    pub fn set_m_err1(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 4_usize)) | ((val as u8) & 1) << 4_usize;
-    }
-    pub const fn m_err2(&self) -> bool {
-        let val = (self.0 >> 5_usize) & 1;
-        val != 0
-    }
-    pub fn set_m_err2(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 5_usize)) | ((val as u8) & 1) << 5_usize;
-    }
-    pub const fn m_par(&self) -> bool {
-        let val = (self.0 >> 6_usize) & 1;
-        val != 0
-    }
-    pub fn set_m_par(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 6_usize)) | ((val as u8) & 1) << 6_usize;
-    }
-    pub const fn m_crc(&self) -> bool {
-        let val = (self.0 >> 7_usize) & 1;
-        val != 0
-    }
-    pub fn set_m_crc(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 7_usize)) | ((val as u8) & 1) << 7_usize;
-    }
-}
-impl Default for IrqMaskErrorWup {
-    fn default() -> IrqMaskErrorWup {
-        IrqMaskErrorWup(0)
-    }
-}
-impl From<u8> for IrqMaskErrorWup {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<IrqMaskErrorWup> for u8 {
-    fn from(val: IrqMaskErrorWup) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct IrqMain(pub u8);
-impl IrqMain {
-    pub const fn err(&self) -> bool {
-        let val = (self.0 >> 0_usize) & 1;
-        val != 0
-    }
-    pub const fn tim(&self) -> bool {
-        let val = (self.0 >> 1_usize) & 1;
-        val != 0
-    }
-    pub const fn col(&self) -> bool {
-        let val = (self.0 >> 2_usize) & 1;
-        val != 0
-    }
-    pub const fn txe(&self) -> bool {
-        let val = (self.0 >> 3_usize) & 1;
-        val != 0
-    }
-    pub const fn rxe(&self) -> bool {
-        let val = (self.0 >> 4_usize) & 1;
-        val != 0
-    }
-    pub const fn rxs(&self) -> bool {
-        let val = (self.0 >> 5_usize) & 1;
-        val != 0
-    }
-    pub const fn wl(&self) -> bool {
-        let val = (self.0 >> 6_usize) & 1;
-        val != 0
-    }
-    pub const fn osc(&self) -> bool {
-        let val = (self.0 >> 7_usize) & 1;
-        val != 0
-    }
-}
-impl Default for IrqMain {
-    fn default() -> IrqMain {
-        IrqMain(0)
-    }
-}
-impl From<u8> for IrqMain {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<IrqMain> for u8 {
-    fn from(val: IrqMain) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct IrqTimerNfc(pub u8);
-impl IrqTimerNfc {
-    pub const fn nfct(&self) -> bool {
-        let val = (self.0 >> 0_usize) & 1;
-        val != 0
-    }
-    pub const fn cat(&self) -> bool {
-        let val = (self.0 >> 1_usize) & 1;
-        val != 0
-    }
-    pub const fn cac(&self) -> bool {
-        let val = (self.0 >> 2_usize) & 1;
-        val != 0
-    }
-    pub const fn eof(&self) -> bool {
-        let val = (self.0 >> 3_usize) & 1;
-        val != 0
-    }
-    pub const fn eon(&self) -> bool {
-        let val = (self.0 >> 4_usize) & 1;
-        val != 0
-    }
-    pub const fn gpe(&self) -> bool {
-        let val = (self.0 >> 5_usize) & 1;
-        val != 0
-    }
-    pub const fn nre(&self) -> bool {
-        let val = (self.0 >> 6_usize) & 1;
-        val != 0
-    }
-    pub const fn dcd(&self) -> bool {
-        let val = (self.0 >> 7_usize) & 1;
-        val != 0
-    }
-}
-impl Default for IrqTimerNfc {
-    fn default() -> IrqTimerNfc {
-        IrqTimerNfc(0)
-    }
-}
-impl From<u8> for IrqTimerNfc {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<IrqTimerNfc> for u8 {
-    fn from(val: IrqTimerNfc) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct FifoStatus2(pub u8);
-impl FifoStatus2 {
-    pub const fn np_lb(&self) -> bool {
-        let val = (self.0 >> 0_usize) & 1;
-        val != 0
-    }
-    pub const fn fifo_lb(&self) -> u8 {
-        let val = (self.0 >> 1_usize) & 3;
-        val as u8
-    }
-    pub const fn fifo_ovr(&self) -> bool {
-        let val = (self.0 >> 5_usize) & 1;
-        val != 0
-    }
-    pub const fn fifo_unf(&self) -> bool {
-        let val = (self.0 >> 6_usize) & 1;
-        val != 0
-    }
-}
-impl Default for FifoStatus2 {
-    fn default() -> FifoStatus2 {
-        FifoStatus2(0)
-    }
-}
-impl From<u8> for FifoStatus2 {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<FifoStatus2> for u8 {
-    fn from(val: FifoStatus2) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct CollisionStatus(pub u8);
-impl CollisionStatus {
-    pub const fn c_pb(&self) -> bool {
-        let val = (self.0 >> 0_usize) & 1;
-        val != 0
-    }
-    pub const fn c_bit(&self) -> u8 {
-        let val = (self.0 >> 1_usize) & 3;
-        val as u8
-    }
-    pub const fn c_byte(&self) -> u8 {
-        let val = (self.0 >> 4_usize) & 4;
-        val as u8
-    }
-}
-impl Default for CollisionStatus {
-    fn default() -> CollisionStatus {
-        CollisionStatus(0)
-    }
-}
-impl From<u8> for CollisionStatus {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<CollisionStatus> for u8 {
-    fn from(val: CollisionStatus) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct NumTxBytes2(pub u8);
-impl NumTxBytes2 {
-    pub const fn nbtx(&self) -> u8 {
+pub struct StreamMode(pub u8);
+impl StreamMode {
+    pub const fn stx(&self) -> StreamModeStx {
         let val = (self.0 >> 0_usize) & 3;
-        val as u8
+        StreamModeStx(val as u8)
     }
-    pub fn set_nbtx(&mut self, val: u8) {
-        self.0 = (self.0 & !(3 << 0_usize)) | ((val as u8) & 3) << 0_usize;
+    pub fn set_stx(&mut self, val: StreamModeStx) {
+        self.0 = (self.0 & !(3 << 0_usize)) | ((val.0 as u8) & 3) << 0_usize;
     }
-    pub const fn ntx(&self) -> u8 {
-        let val = (self.0 >> 3_usize) & 5;
-        val as u8
+    pub const fn scp(&self) -> StreamModeScp {
+        let val = (self.0 >> 3_usize) & 2;
+        StreamModeScp(val as u8)
     }
-    pub fn set_ntx(&mut self, val: u8) {
-        self.0 = (self.0 & !(5 << 3_usize)) | ((val as u8) & 5) << 3_usize;
+    pub fn set_scp(&mut self, val: StreamModeScp) {
+        self.0 = (self.0 & !(2 << 3_usize)) | ((val.0 as u8) & 2) << 3_usize;
+    }
+    pub const fn scf(&self) -> StreamModeScf {
+        let val = (self.0 >> 5_usize) & 2;
+        StreamModeScf(val as u8)
+    }
+    pub fn set_scf(&mut self, val: StreamModeScf) {
+        self.0 = (self.0 & !(2 << 5_usize)) | ((val.0 as u8) & 2) << 5_usize;
     }
 }
-impl Default for NumTxBytes2 {
-    fn default() -> NumTxBytes2 {
-        NumTxBytes2(0)
+impl Default for StreamMode {
+    fn default() -> StreamMode {
+        StreamMode(0)
     }
 }
-impl From<u8> for NumTxBytes2 {
+impl From<u8> for StreamMode {
     fn from(val: u8) -> Self {
         Self(val)
     }
 }
-impl From<NumTxBytes2> for u8 {
-    fn from(val: NumTxBytes2) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct Nfcip1BitRateDisp(pub u8);
-impl Nfcip1BitRateDisp {
-    pub const fn nfc_rate(&self) -> u8 {
-        let val = (self.0 >> 4_usize) & 4;
-        val as u8
-    }
-}
-impl Default for Nfcip1BitRateDisp {
-    fn default() -> Nfcip1BitRateDisp {
-        Nfcip1BitRateDisp(0)
-    }
-}
-impl From<u8> for Nfcip1BitRateDisp {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<Nfcip1BitRateDisp> for u8 {
-    fn from(val: Nfcip1BitRateDisp) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct AntTuneCtrl(pub u8);
-impl AntTuneCtrl {
-    pub const fn tre(&self) -> u8 {
-        let val = (self.0 >> 3_usize) & 4;
-        val as u8
-    }
-    pub fn set_tre(&mut self, val: u8) {
-        self.0 = (self.0 & !(4 << 3_usize)) | ((val as u8) & 4) << 3_usize;
-    }
-    pub const fn trim_s(&self) -> bool {
-        let val = (self.0 >> 7_usize) & 1;
-        val != 0
-    }
-    pub fn set_trim_s(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 7_usize)) | ((val as u8) & 1) << 7_usize;
-    }
-}
-impl Default for AntTuneCtrl {
-    fn default() -> AntTuneCtrl {
-        AntTuneCtrl(0)
-    }
-}
-impl From<u8> for AntTuneCtrl {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<AntTuneCtrl> for u8 {
-    fn from(val: AntTuneCtrl) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct AntTuneDisp(pub u8);
-impl AntTuneDisp {
-    pub const fn tri_err(&self) -> bool {
-        let val = (self.0 >> 3_usize) & 1;
-        val != 0
-    }
-    pub const fn tri(&self) -> u8 {
-        let val = (self.0 >> 4_usize) & 4;
-        val as u8
-    }
-}
-impl Default for AntTuneDisp {
-    fn default() -> AntTuneDisp {
-        AntTuneDisp(0)
-    }
-}
-impl From<u8> for AntTuneDisp {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<AntTuneDisp> for u8 {
-    fn from(val: AntTuneDisp) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct AmModDepthCtrl(pub u8);
-impl AmModDepthCtrl {
-    pub const fn modd(&self) -> u8 {
-        let val = (self.0 >> 1_usize) & 6;
-        val as u8
-    }
-    pub fn set_modd(&mut self, val: u8) {
-        self.0 = (self.0 & !(6 << 1_usize)) | ((val as u8) & 6) << 1_usize;
-    }
-    pub const fn am_s(&self) -> bool {
-        let val = (self.0 >> 7_usize) & 1;
-        val != 0
-    }
-    pub fn set_am_s(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 7_usize)) | ((val as u8) & 1) << 7_usize;
-    }
-}
-impl Default for AmModDepthCtrl {
-    fn default() -> AmModDepthCtrl {
-        AmModDepthCtrl(0)
-    }
-}
-impl From<u8> for AmModDepthCtrl {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<AmModDepthCtrl> for u8 {
-    fn from(val: AmModDepthCtrl) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct RfoAmLevelDef(pub u8);
-impl RfoAmLevelDef {
-    pub const fn d0(&self) -> bool {
-        let val = (self.0 >> 0_usize) & 1;
-        val != 0
-    }
-    pub fn set_d0(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 0_usize)) | ((val as u8) & 1) << 0_usize;
-    }
-    pub const fn d1(&self) -> bool {
-        let val = (self.0 >> 1_usize) & 1;
-        val != 0
-    }
-    pub fn set_d1(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 1_usize)) | ((val as u8) & 1) << 1_usize;
-    }
-    pub const fn d2(&self) -> bool {
-        let val = (self.0 >> 2_usize) & 1;
-        val != 0
-    }
-    pub fn set_d2(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 2_usize)) | ((val as u8) & 1) << 2_usize;
-    }
-    pub const fn d3(&self) -> bool {
-        let val = (self.0 >> 3_usize) & 1;
-        val != 0
-    }
-    pub fn set_d3(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 3_usize)) | ((val as u8) & 1) << 3_usize;
-    }
-    pub const fn d4(&self) -> bool {
-        let val = (self.0 >> 4_usize) & 1;
-        val != 0
-    }
-    pub fn set_d4(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 4_usize)) | ((val as u8) & 1) << 4_usize;
-    }
-    pub const fn d5(&self) -> bool {
-        let val = (self.0 >> 5_usize) & 1;
-        val != 0
-    }
-    pub fn set_d5(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 5_usize)) | ((val as u8) & 1) << 5_usize;
-    }
-    pub const fn d6(&self) -> bool {
-        let val = (self.0 >> 6_usize) & 1;
-        val != 0
-    }
-    pub fn set_d6(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 6_usize)) | ((val as u8) & 1) << 6_usize;
-    }
-    pub const fn d7(&self) -> bool {
-        let val = (self.0 >> 7_usize) & 1;
-        val != 0
-    }
-    pub fn set_d7(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 7_usize)) | ((val as u8) & 1) << 7_usize;
-    }
-}
-impl Default for RfoAmLevelDef {
-    fn default() -> RfoAmLevelDef {
-        RfoAmLevelDef(0)
-    }
-}
-impl From<u8> for RfoAmLevelDef {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<RfoAmLevelDef> for u8 {
-    fn from(val: RfoAmLevelDef) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct ExtFieldDetThr(pub u8);
-impl ExtFieldDetThr {
-    pub const fn rfe_t(&self) -> ThresholdDef {
-        let val = (self.0 >> 0_usize) & 4;
-        ThresholdDef(val as u8)
-    }
-    pub fn set_rfe_t(&mut self, val: ThresholdDef) {
-        self.0 = (self.0 & !(4 << 0_usize)) | ((val.0 as u8) & 4) << 0_usize;
-    }
-    pub const fn trg_l(&self) -> ThresholdDef {
-        let val = (self.0 >> 4_usize) & 3;
-        ThresholdDef(val as u8)
-    }
-    pub fn set_trg_l(&mut self, val: ThresholdDef) {
-        self.0 = (self.0 & !(3 << 4_usize)) | ((val.0 as u8) & 3) << 4_usize;
-    }
-}
-impl Default for ExtFieldDetThr {
-    fn default() -> ExtFieldDetThr {
-        ExtFieldDetThr(51)
-    }
-}
-impl From<u8> for ExtFieldDetThr {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<ExtFieldDetThr> for u8 {
-    fn from(val: ExtFieldDetThr) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct RegulatorVoltControl(pub u8);
-impl RegulatorVoltControl {
-    pub const fn mpsv(&self) -> u8 {
-        let val = (self.0 >> 1_usize) & 2;
-        val as u8
-    }
-    pub fn set_mpsv(&mut self, val: u8) {
-        self.0 = (self.0 & !(2 << 1_usize)) | ((val as u8) & 2) << 1_usize;
-    }
-    pub const fn rege(&self) -> u8 {
-        let val = (self.0 >> 3_usize) & 4;
-        val as u8
-    }
-    pub fn set_rege(&mut self, val: u8) {
-        self.0 = (self.0 & !(4 << 3_usize)) | ((val as u8) & 4) << 3_usize;
-    }
-    pub const fn reg_s(&self) -> bool {
-        let val = (self.0 >> 7_usize) & 1;
-        val != 0
-    }
-    pub fn set_reg_s(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 7_usize)) | ((val as u8) & 1) << 7_usize;
-    }
-}
-impl Default for RegulatorVoltControl {
-    fn default() -> RegulatorVoltControl {
-        RegulatorVoltControl(0)
-    }
-}
-impl From<u8> for RegulatorVoltControl {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<RegulatorVoltControl> for u8 {
-    fn from(val: RegulatorVoltControl) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct RegulatorAndTimDisp(pub u8);
-impl RegulatorAndTimDisp {
-    pub const fn mrt_on(&self) -> bool {
-        let val = (self.0 >> 0_usize) & 1;
-        val != 0
-    }
-    pub const fn nrt_on(&self) -> bool {
-        let val = (self.0 >> 1_usize) & 1;
-        val != 0
-    }
-    pub const fn gpt_on(&self) -> bool {
-        let val = (self.0 >> 2_usize) & 1;
-        val != 0
-    }
-    pub const fn reg(&self) -> u8 {
-        let val = (self.0 >> 4_usize) & 4;
-        val as u8
-    }
-}
-impl Default for RegulatorAndTimDisp {
-    fn default() -> RegulatorAndTimDisp {
-        RegulatorAndTimDisp(0)
-    }
-}
-impl From<u8> for RegulatorAndTimDisp {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<RegulatorAndTimDisp> for u8 {
-    fn from(val: RegulatorAndTimDisp) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct RssiResult(pub u8);
-impl RssiResult {
-    pub const fn rssi_pm(&self) -> u8 {
-        let val = (self.0 >> 0_usize) & 4;
-        val as u8
-    }
-    pub const fn rssi_am(&self) -> u8 {
-        let val = (self.0 >> 4_usize) & 4;
-        val as u8
-    }
-}
-impl Default for RssiResult {
-    fn default() -> RssiResult {
-        RssiResult(0)
-    }
-}
-impl From<u8> for RssiResult {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<RssiResult> for u8 {
-    fn from(val: RssiResult) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct GainReduState(pub u8);
-impl GainReduState {
-    pub const fn gs_pm(&self) -> u8 {
-        let val = (self.0 >> 0_usize) & 4;
-        val as u8
-    }
-    pub const fn gs_am(&self) -> u8 {
-        let val = (self.0 >> 4_usize) & 4;
-        val as u8
-    }
-}
-impl Default for GainReduState {
-    fn default() -> GainReduState {
-        GainReduState(0)
-    }
-}
-impl From<u8> for GainReduState {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<GainReduState> for u8 {
-    fn from(val: GainReduState) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct CapSensorControl(pub u8);
-impl CapSensorControl {
-    pub const fn cs_g(&self) -> u8 {
-        let val = (self.0 >> 0_usize) & 3;
-        val as u8
-    }
-    pub fn set_cs_g(&mut self, val: u8) {
-        self.0 = (self.0 & !(3 << 0_usize)) | ((val as u8) & 3) << 0_usize;
-    }
-    pub const fn cs_mcal(&self) -> u8 {
-        let val = (self.0 >> 3_usize) & 5;
-        val as u8
-    }
-    pub fn set_cs_mcal(&mut self, val: u8) {
-        self.0 = (self.0 & !(5 << 3_usize)) | ((val as u8) & 5) << 3_usize;
-    }
-}
-impl Default for CapSensorControl {
-    fn default() -> CapSensorControl {
-        CapSensorControl(0)
-    }
-}
-impl From<u8> for CapSensorControl {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<CapSensorControl> for u8 {
-    fn from(val: CapSensorControl) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct CapSensorDisp(pub u8);
-impl CapSensorDisp {
-    pub const fn cs_cal_err(&self) -> bool {
-        let val = (self.0 >> 1_usize) & 1;
-        val != 0
-    }
-    pub const fn cs_cal_end(&self) -> bool {
-        let val = (self.0 >> 2_usize) & 1;
-        val != 0
-    }
-    pub const fn cs_cal_val(&self) -> u8 {
-        let val = (self.0 >> 3_usize) & 5;
-        val as u8
-    }
-}
-impl Default for CapSensorDisp {
-    fn default() -> CapSensorDisp {
-        CapSensorDisp(0)
-    }
-}
-impl From<u8> for CapSensorDisp {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<CapSensorDisp> for u8 {
-    fn from(val: CapSensorDisp) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct AuxDisplay(pub u8);
-impl AuxDisplay {
-    pub const fn en_ac(&self) -> bool {
-        let val = (self.0 >> 0_usize) & 1;
-        val != 0
-    }
-    pub const fn nfc_t(&self) -> bool {
-        let val = (self.0 >> 1_usize) & 1;
-        val != 0
-    }
-    pub const fn rx_act(&self) -> bool {
-        let val = (self.0 >> 2_usize) & 1;
-        val != 0
-    }
-    pub const fn rx_on(&self) -> bool {
-        let val = (self.0 >> 3_usize) & 1;
-        val != 0
-    }
-    pub const fn osc_ok(&self) -> bool {
-        let val = (self.0 >> 4_usize) & 1;
-        val != 0
-    }
-    pub const fn tx_on(&self) -> bool {
-        let val = (self.0 >> 5_usize) & 1;
-        val != 0
-    }
-    pub const fn efd_o(&self) -> bool {
-        let val = (self.0 >> 6_usize) & 1;
-        val != 0
-    }
-    pub const fn a_cha(&self) -> bool {
-        let val = (self.0 >> 7_usize) & 1;
-        val != 0
-    }
-}
-impl Default for AuxDisplay {
-    fn default() -> AuxDisplay {
-        AuxDisplay(0)
-    }
-}
-impl From<u8> for AuxDisplay {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<AuxDisplay> for u8 {
-    fn from(val: AuxDisplay) -> u8 {
+impl From<StreamMode> for u8 {
+    fn from(val: StreamMode) -> u8 {
         val.0
     }
 }
@@ -2222,178 +2394,6 @@ impl From<WupTimerControl> for u8 {
     }
 }
 #[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct AmplitudeMeasureConf(pub u8);
-impl AmplitudeMeasureConf {
-    pub const fn am_ae(&self) -> bool {
-        let val = (self.0 >> 0_usize) & 1;
-        val != 0
-    }
-    pub fn set_am_ae(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 0_usize)) | ((val as u8) & 1) << 0_usize;
-    }
-    pub const fn am_aew(&self) -> u8 {
-        let val = (self.0 >> 1_usize) & 2;
-        val as u8
-    }
-    pub fn set_am_aew(&mut self, val: u8) {
-        self.0 = (self.0 & !(2 << 1_usize)) | ((val as u8) & 2) << 1_usize;
-    }
-    pub const fn am_aam(&self) -> bool {
-        let val = (self.0 >> 3_usize) & 1;
-        val != 0
-    }
-    pub fn set_am_aam(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 3_usize)) | ((val as u8) & 1) << 3_usize;
-    }
-    pub const fn am_d(&self) -> u8 {
-        let val = (self.0 >> 4_usize) & 4;
-        val as u8
-    }
-    pub fn set_am_d(&mut self, val: u8) {
-        self.0 = (self.0 & !(4 << 4_usize)) | ((val as u8) & 4) << 4_usize;
-    }
-}
-impl Default for AmplitudeMeasureConf {
-    fn default() -> AmplitudeMeasureConf {
-        AmplitudeMeasureConf(0)
-    }
-}
-impl From<u8> for AmplitudeMeasureConf {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<AmplitudeMeasureConf> for u8 {
-    fn from(val: AmplitudeMeasureConf) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct PhaseMeasureConf(pub u8);
-impl PhaseMeasureConf {
-    pub const fn pm_ae(&self) -> bool {
-        let val = (self.0 >> 0_usize) & 1;
-        val != 0
-    }
-    pub fn set_pm_ae(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 0_usize)) | ((val as u8) & 1) << 0_usize;
-    }
-    pub const fn pm_aew(&self) -> u8 {
-        let val = (self.0 >> 1_usize) & 2;
-        val as u8
-    }
-    pub fn set_pm_aew(&mut self, val: u8) {
-        self.0 = (self.0 & !(2 << 1_usize)) | ((val as u8) & 2) << 1_usize;
-    }
-    pub const fn pm_aam(&self) -> bool {
-        let val = (self.0 >> 3_usize) & 1;
-        val != 0
-    }
-    pub fn set_pm_aam(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 3_usize)) | ((val as u8) & 1) << 3_usize;
-    }
-    pub const fn pm_d(&self) -> u8 {
-        let val = (self.0 >> 4_usize) & 4;
-        val as u8
-    }
-    pub fn set_pm_d(&mut self, val: u8) {
-        self.0 = (self.0 & !(4 << 4_usize)) | ((val as u8) & 4) << 4_usize;
-    }
-}
-impl Default for PhaseMeasureConf {
-    fn default() -> PhaseMeasureConf {
-        PhaseMeasureConf(0)
-    }
-}
-impl From<u8> for PhaseMeasureConf {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<PhaseMeasureConf> for u8 {
-    fn from(val: PhaseMeasureConf) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct CapacitanceMeasureConf(pub u8);
-impl CapacitanceMeasureConf {
-    pub const fn cm_ae(&self) -> bool {
-        let val = (self.0 >> 0_usize) & 1;
-        val != 0
-    }
-    pub fn set_cm_ae(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 0_usize)) | ((val as u8) & 1) << 0_usize;
-    }
-    pub const fn cm_aew(&self) -> u8 {
-        let val = (self.0 >> 1_usize) & 2;
-        val as u8
-    }
-    pub fn set_cm_aew(&mut self, val: u8) {
-        self.0 = (self.0 & !(2 << 1_usize)) | ((val as u8) & 2) << 1_usize;
-    }
-    pub const fn cm_aam(&self) -> bool {
-        let val = (self.0 >> 3_usize) & 1;
-        val != 0
-    }
-    pub fn set_cm_aam(&mut self, val: bool) {
-        self.0 = (self.0 & !(1 << 3_usize)) | ((val as u8) & 1) << 3_usize;
-    }
-    pub const fn cm_d(&self) -> u8 {
-        let val = (self.0 >> 4_usize) & 4;
-        val as u8
-    }
-    pub fn set_cm_d(&mut self, val: u8) {
-        self.0 = (self.0 & !(4 << 4_usize)) | ((val as u8) & 4) << 4_usize;
-    }
-}
-impl Default for CapacitanceMeasureConf {
-    fn default() -> CapacitanceMeasureConf {
-        CapacitanceMeasureConf(0)
-    }
-}
-impl From<u8> for CapacitanceMeasureConf {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<CapacitanceMeasureConf> for u8 {
-    fn from(val: CapacitanceMeasureConf) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct IcIdentity(pub u8);
-impl IcIdentity {
-    pub const fn ic_rev(&self) -> IcIdentityIcRev {
-        let val = (self.0 >> 0_usize) & 3;
-        IcIdentityIcRev(val as u8)
-    }
-    pub const fn ic_type(&self) -> IcIdentityIcType {
-        let val = (self.0 >> 3_usize) & 5;
-        IcIdentityIcType(val as u8)
-    }
-}
-impl Default for IcIdentity {
-    fn default() -> IcIdentity {
-        IcIdentity(0)
-    }
-}
-impl From<u8> for IcIdentity {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<IcIdentity> for u8 {
-    fn from(val: IcIdentity) -> u8 {
-        val.0
-    }
-}
-#[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
 pub struct BitRateE(pub u8);
 impl BitRateE {
@@ -2412,62 +2412,6 @@ impl From<u8> for BitRateE {
 }
 impl From<BitRateE> for u8 {
     fn from(val: BitRateE) -> u8 {
-        val.0
-    }
-}
-
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
-pub struct ThresholdDef(pub u8);
-impl ThresholdDef {
-    pub const _75MV: Self = Self(0x00);
-    pub const _105MV: Self = Self(0x01);
-    pub const _150MV: Self = Self(0x02);
-    pub const _205MV: Self = Self(0x03);
-    pub const _290MV: Self = Self(0x04);
-    pub const _400MV: Self = Self(0x05);
-    pub const _560MV: Self = Self(0x06);
-    pub const _800MV: Self = Self(0x07);
-    pub const _25MV: Self = Self(0x08);
-    pub const _33MV: Self = Self(0x09);
-    pub const _47MV: Self = Self(0x0a);
-    pub const _64MV: Self = Self(0x0b);
-    pub const _90MV: Self = Self(0x0c);
-    pub const _125MV: Self = Self(0x0d);
-    pub const _175MV: Self = Self(0x0e);
-    pub const _250MV: Self = Self(0x0f);
-}
-impl From<u8> for ThresholdDef {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<ThresholdDef> for u8 {
-    fn from(val: ThresholdDef) -> u8 {
-        val.0
-    }
-}
-
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
-pub struct WakeupTimesDef(pub u8);
-impl WakeupTimesDef {
-    pub const _10: Self = Self(0x00);
-    pub const _20: Self = Self(0x01);
-    pub const _30: Self = Self(0x02);
-    pub const _40: Self = Self(0x03);
-    pub const _50: Self = Self(0x04);
-    pub const _60: Self = Self(0x05);
-    pub const _70: Self = Self(0x06);
-    pub const _80: Self = Self(0x07);
-}
-impl From<u8> for WakeupTimesDef {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<WakeupTimesDef> for u8 {
-    fn from(val: WakeupTimesDef) -> u8 {
         val.0
     }
 }
@@ -2532,24 +2476,6 @@ impl From<IoConf1OutCl> for u8 {
 
 #[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
-pub struct Iso14443B1Sof1(pub u8);
-impl Iso14443B1Sof1 {
-    pub const _2ETU: Self = Self(0x00);
-    pub const _3ETU: Self = Self(0x01);
-}
-impl From<u8> for Iso14443B1Sof1 {
-    fn from(val: u8) -> Self {
-        Self(val)
-    }
-}
-impl From<Iso14443B1Sof1> for u8 {
-    fn from(val: Iso14443B1Sof1) -> u8 {
-        val.0
-    }
-}
-
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
 pub struct Iso14443B1Sof0(pub u8);
 impl Iso14443B1Sof0 {
     pub const _10ETU: Self = Self(0x00);
@@ -2562,6 +2488,24 @@ impl From<u8> for Iso14443B1Sof0 {
 }
 impl From<Iso14443B1Sof0> for u8 {
     fn from(val: Iso14443B1Sof0) -> u8 {
+        val.0
+    }
+}
+
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
+pub struct Iso14443B1Sof1(pub u8);
+impl Iso14443B1Sof1 {
+    pub const _2ETU: Self = Self(0x00);
+    pub const _3ETU: Self = Self(0x01);
+}
+impl From<u8> for Iso14443B1Sof1 {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<Iso14443B1Sof1> for u8 {
+    fn from(val: Iso14443B1Sof1) -> u8 {
         val.0
     }
 }
@@ -2718,6 +2662,62 @@ impl From<StreamModeStx> for u8 {
 
 #[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
+pub struct ThresholdDef1(pub u8);
+impl ThresholdDef1 {
+    pub const _75MV: Self = Self(0x00);
+    pub const _105MV: Self = Self(0x01);
+    pub const _150MV: Self = Self(0x02);
+    pub const _205MV: Self = Self(0x03);
+    pub const _290MV: Self = Self(0x04);
+    pub const _400MV: Self = Self(0x05);
+    pub const _560MV: Self = Self(0x06);
+    pub const _800MV: Self = Self(0x07);
+}
+impl From<u8> for ThresholdDef1 {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<ThresholdDef1> for u8 {
+    fn from(val: ThresholdDef1) -> u8 {
+        val.0
+    }
+}
+
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
+pub struct ThresholdDef2(pub u8);
+impl ThresholdDef2 {
+    pub const _75MV: Self = Self(0x00);
+    pub const _105MV: Self = Self(0x01);
+    pub const _150MV: Self = Self(0x02);
+    pub const _205MV: Self = Self(0x03);
+    pub const _290MV: Self = Self(0x04);
+    pub const _400MV: Self = Self(0x05);
+    pub const _560MV: Self = Self(0x06);
+    pub const _800MV: Self = Self(0x07);
+    pub const _25MV: Self = Self(0x08);
+    pub const _33MV: Self = Self(0x09);
+    pub const _47MV: Self = Self(0x0a);
+    pub const _64MV: Self = Self(0x0b);
+    pub const _90MV: Self = Self(0x0c);
+    pub const _125MV: Self = Self(0x0d);
+    pub const _175MV: Self = Self(0x0e);
+    pub const _250MV: Self = Self(0x0f);
+}
+impl From<u8> for ThresholdDef2 {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<ThresholdDef2> for u8 {
+    fn from(val: ThresholdDef2) -> u8 {
+        val.0
+    }
+}
+
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
 pub struct TimerEmvControlGptc(pub u8);
 impl TimerEmvControlGptc {
     pub const NO_TRIGGER: Self = Self(0x00);
@@ -2750,6 +2750,31 @@ impl From<u8> for TimerEmvControlNrtStep {
 }
 impl From<TimerEmvControlNrtStep> for u8 {
     fn from(val: TimerEmvControlNrtStep) -> u8 {
+        val.0
+    }
+}
+
+/// Typical wake-up time, values for wur=1; multiply by 10 for wur=0
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
+pub struct WakeupTimesDef(pub u8);
+impl WakeupTimesDef {
+    pub const _10: Self = Self(0x00);
+    pub const _20: Self = Self(0x01);
+    pub const _30: Self = Self(0x02);
+    pub const _40: Self = Self(0x03);
+    pub const _50: Self = Self(0x04);
+    pub const _60: Self = Self(0x05);
+    pub const _70: Self = Self(0x06);
+    pub const _80: Self = Self(0x07);
+}
+impl From<u8> for WakeupTimesDef {
+    fn from(val: u8) -> Self {
+        Self(val)
+    }
+}
+impl From<WakeupTimesDef> for u8 {
+    fn from(val: WakeupTimesDef) -> u8 {
         val.0
     }
 }
