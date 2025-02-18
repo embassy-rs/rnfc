@@ -4,10 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-defmt = [ "dep:defmt", "rnfc-traits/defmt", "heapless/defmt-03" ]
+defmt = ["dep:defmt", "rnfc-traits/defmt", "heapless/defmt-03"]
 st25r3916 = []
 st25r3911b = []
-default = [ "st25r3916" ]
+default = []
 
 [dependencies]
 defmt = { version = "0.3", optional = true }

@@ -6,10 +6,12 @@ use embassy_time::{with_timeout, Duration, Instant, Timer};
 use embedded_hal::digital::InputPin;
 use embedded_hal_async::digital::Wait;
 
-pub use crate::commands::Command;
-pub use crate::interface::Interface;
+use crate::commands::Command;
+use crate::impls::{FieldOnError, WakeupConfig, WakeupReference};
+use crate::interface::Interface;
 use crate::regs::Regs;
-use crate::{regs, Error, FieldOnError, WakeupConfig, WakeupReference, DEFAULT_TIMEOUT};
+use crate::{regs, Error, Mode, St25r39};
+const DEFAULT_TIMEOUT: Duration = Duration::from_millis(500);
 
 // TODO: This is here temporarily, just to provide abstraction similar to st25r3916.
 // Thus - bits do not match.
@@ -72,13 +74,13 @@ pub enum Interrupt {
 
 /// Device starts with default configuration. Initially the oscillator is not enabled.
 /// It's possible to verify register contents; then call `configure` to enable RF.
-impl<I: Interface, IrqPin: InputPin + Wait> super::St25r39<I, IrqPin> {
+impl<I: Interface, IrqPin: InputPin + Wait> St25r39<I, IrqPin> {
     pub async fn new(iface: I, irq: IrqPin) -> Result<Self, Error<I::Error>> {
         let mut this = Self {
             iface,
             irq,
             irqs: 0,
-            mode: super::Mode::Off,
+            mode: Mode::Off,
         };
         this.init().await?;
         //this.configure();
@@ -223,14 +225,14 @@ impl<I: Interface, IrqPin: InputPin + Wait> super::St25r39<I, IrqPin> {
     }
 
     pub async fn mode_on(&mut self) -> Result<(), Error<I::Error>> {
-        self.mode = super::Mode::On;
+        self.mode = Mode::On;
         self.enable_osc().await?;
 
         Ok(())
     }
 
     pub fn mode_off(&mut self) -> Result<(), Error<I::Error>> {
-        self.mode = super::Mode::Off;
+        self.mode = Mode::Off;
         self.cmd(Command::Stop)?;
         // disable everything
         self.regs().op_control().write(|_| {})?;
@@ -288,7 +290,7 @@ impl<I: Interface, IrqPin: InputPin + Wait> super::St25r39<I, IrqPin> {
     pub async fn wait_for_card(&mut self, config: WakeupConfig) -> Result<(), Error<I::Error>> {
         self.mode_on().await?;
 
-        self.mode = super::Mode::Wakeup;
+        self.mode = Mode::Wakeup;
         debug!("Entering wakeup mode");
 
         self.cmd(Command::Stop)?;

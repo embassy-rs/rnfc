@@ -2,8 +2,7 @@
 
 use core::marker::PhantomData;
 
-use super::Interface;
-use crate::Error;
+use crate::{Error, Interface};
 
 pub struct Reg<'a, I: Interface, T: Copy> {
     addr: u8,

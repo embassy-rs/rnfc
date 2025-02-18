@@ -1,10 +1,16 @@
 use core::fmt::Debug;
 
-use embassy_time::{with_timeout, Timer};
+use embassy_futures::yield_now;
+use embassy_time::{with_timeout, Duration, Timer};
+use embedded_hal::digital::InputPin;
+use embedded_hal_async::digital::Wait;
 use rnfc_traits::iso14443a_ll as ll;
 
+use crate::commands::Command;
 use crate::fmt::Bytes;
-use crate::*;
+use crate::impls::{FieldOnError, Interrupt};
+use crate::interface::Interface;
+use crate::St25r39;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
@@ -125,7 +131,7 @@ impl<'d, I: Interface + 'd, IrqPin: InputPin + Wait + 'd> ll::Reader for Iso1444
             }
         };
 
-        #[cfg(not(feature = "st25r3911b"))]
+        #[cfg(feature = "st25r3916")]
         this.regs().corr_conf1().write(|w| {
             w.0 = 0x13;
             w.set_corr_s6(!is_anticoll);
@@ -141,7 +147,7 @@ impl<'d, I: Interface + 'd, IrqPin: InputPin + Wait + 'd> ll::Reader for Iso1444
             // Disable Automatic Gain Control (AGC) for better detection of collisions if using Coherent Receiver
             w.set_agc_en(!is_anticoll);
             w.set_agc_m(true); // AGC operates during complete receive period
-            #[cfg(not(feature = "st25r3911b"))]
+            #[cfg(feature = "st25r3916")]
             {
                 w.set_agc6_3(true); // 0: AGC ratio 3
             }
@@ -152,23 +158,23 @@ impl<'d, I: Interface + 'd, IrqPin: InputPin + Wait + 'd> ll::Reader for Iso1444
         this.cmd(cmd)?;
 
         // Wait for tx ended
-        #[cfg(not(feature = "st25r3911b"))]
+        #[cfg(feature = "st25r3916")]
         this.irq_wait(Interrupt::Txe).await?;
         // #[cfg(feature = "st25r3911b")]
         // this.irq_wait(|| this.regs().irq_main().read().expect("be readable").txe()).await?;
 
         // Wait for RX started
-        #[cfg(not(feature = "st25r3911b"))]
+        #[cfg(feature = "st25r3916")]
         this.irq_wait_timeout(Interrupt::Rxs, Duration::from_millis(fwt_ms as _))
             .await?;
         // #[cfg(feature = "st25r3911b")]
         // this.irq_wait_timeout(
         //         || this.regs().irq_main().read().expect("be readable").rxs(),
         //         Duration::from_millis(fwt_ms as _));
-        #[cfg(feature = "st25r3911b")]
+        #[cfg(not(feature = "st25r3916"))]
         let _ = fwt_ms;
 
-        #[cfg(not(feature = "st25r3911b"))]
+        #[cfg(feature = "st25r3916")]
         this.irq_wait_timeout(Interrupt::Rxs, Duration::from_millis(fwt_ms as _))
             .await?;
         // #[cfg(feature = "st25r3911b")]
@@ -224,7 +230,7 @@ impl<'d, I: Interface + 'd, IrqPin: InputPin + Wait + 'd> ll::Reader for Iso1444
         }
 
         let mut rx_bytes = this.regs().fifo_status1().read()? as usize;
-        #[cfg(not(feature = "st25r3911b"))]
+        #[cfg(feature = "st25r3916")]
         {
             rx_bytes |= (stat.fifo_b() as usize) << 8;
         }

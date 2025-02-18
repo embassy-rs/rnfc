@@ -54,9 +54,10 @@ impl<I: Interface, IrqPin: InputPin + Wait> St25r39<I, IrqPin> {
             a = new_a;
             b = new_b;
         }
-        #[cfg(not(feature = "st25r3911b"))]
+
+        #[cfg(feature = "st25r3916")]
         self.regs().ant_tune_a().write_value(a)?;
-        #[cfg(not(feature = "st25r3911b"))]
+        #[cfg(feature = "st25r3916")]
         self.regs().ant_tune_a().write_value(b)?;
 
         // st25r3911b chip might offer a better approach, simlar to what lib does
@@ -72,9 +73,9 @@ impl<I: Interface, IrqPin: InputPin + Wait> St25r39<I, IrqPin> {
     }
 
     async fn aat_measure(&mut self, a: u8, b: u8, conf: &AatConfig) -> Result<u32, Error<I::Error>> {
-        #[cfg(not(feature = "st25r3911b"))]
+        #[cfg(feature = "st25r3916")]
         self.regs().ant_tune_a().write_value(a)?;
-        #[cfg(not(feature = "st25r3911b"))]
+        #[cfg(feature = "st25r3916")]
         self.regs().ant_tune_a().write_value(b)?;
 
         // Wait for caps to settle.

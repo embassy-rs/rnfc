@@ -19,7 +19,8 @@ use embassy_time::{Duration, Timer};
 use rnfc::iso14443a::Poller;
 use rnfc::iso_dep::IsoDepA;
 use rnfc::traits::iso_dep::Reader;
-use rnfc_st25r39::{SpiInterface, St25r39, WakeupConfig, WakeupMethodConfig, WakeupPeriod, WakeupReference};
+use rnfc_st25r39::impls::{WakeupConfig, WakeupMethodConfig, WakeupPeriod, WakeupReference};
+use rnfc_st25r39::{SpiInterface, St25r39};
 use {defmt_rtt as _, panic_probe as _};
 
 #[embassy_executor::main]
