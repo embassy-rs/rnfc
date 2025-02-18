@@ -1137,7 +1137,7 @@ enum/AUX_nfc_id:
       value: 0
     - name: 7bytes
       value: 1
-enum/BIT_RATE:
+enum/BIT_RATE_E:
   bit_size: 2
   variants:
     - name: "106"
