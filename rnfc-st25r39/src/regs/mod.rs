@@ -1,5 +1,6 @@
 #[cfg(feature = "st25r3911b")]
 mod regs_st25r3911b;
+use core::marker::PhantomData;
 
 #[cfg(feature = "st25r3911b")]
 pub use regs_st25r3911b::*;
@@ -9,17 +10,9 @@ mod regs_st25r3916;
 #[cfg(feature = "st25r3916")]
 pub use regs_st25r3916::*;
 
-#[cfg(all(not(feature = "st25r3911b"), not(feature = "st25r3916")))]
-mod stub;
-use core::marker::PhantomData;
-
-#[cfg(all(not(feature = "st25r3911b"), not(feature = "st25r3916")))]
-pub use stub::*;
-
 use crate::interface::Interface;
 use crate::Error;
 
-// TODO: if this api is set, then maybe one somehow could remove some bolierplate generation for regs
 pub struct Reg<'a, I: Interface, T: Copy> {
     addr: u8,
     iface: &'a mut I,
@@ -58,10 +51,4 @@ impl<'a, I: Interface, T: Default + Copy + Into<u8> + From<u8>> Reg<'a, I, T> {
         self.write_value(val)?;
         Ok(res)
     }
-}
-
-// just for stub
-#[cfg(not(any(feature = "st25r3911b", feature = "st25r3916")))]
-pub struct Regs<'a, I: Interface> {
-    iface: &'a mut I,
 }

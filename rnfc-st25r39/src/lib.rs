@@ -5,9 +5,9 @@
 // This must go FIRST so that other mods see its macros.
 mod fmt;
 
-// no-chip-specified, maybe it'd be useful to have common api
-// or support a mock, in case some tests to validate calculations?
-#[cfg(any(feature = "st25r3911b", feature = "st25r3916"))]
+#[cfg(all(not(feature = "st25r3911b"), not(feature = "st25r3916")))]
+compile_error!("A chip/feature has to be selected in Cargo.toml");
+
 mod aat;
 pub mod commands;
 pub mod impls;
@@ -28,8 +28,11 @@ pub enum Error<T> {
 
 #[derive(PartialEq, Eq, Clone, Copy)]
 enum Mode {
+    /// SPI running, AFE static power consumpton mnimized
     Off,
+    /// Ready mode
     On,
+    /// Low power mode, card presence detection
     Wakeup,
 }
 

@@ -118,6 +118,10 @@ impl<'a, I: Interface> Regs<'a, I> {
     pub fn ppon2(&mut self) -> Reg<'_, I, u8> {
         Reg::new(self.iface, 21)
     }
+    pub fn irq_mask(&mut self, n: u8) -> Reg<'_, I, u8> {
+        assert!(n < 4);
+        Reg::new(self.iface, 22 + n)
+    }
     pub fn irq_mask_main(&mut self) -> Reg<'_, I, u8> {
         Reg::new(self.iface, 22)
     }
@@ -130,8 +134,9 @@ impl<'a, I: Interface> Regs<'a, I> {
     pub fn irq_mask_target(&mut self) -> Reg<'_, I, u8> {
         Reg::new(self.iface, 25)
     }
-    pub fn irq_main(&mut self) -> Reg<'_, I, u8> {
-        Reg::new(self.iface, 26)
+    pub fn irq_main(&mut self, n: u8) -> Reg<'_, I, u8> {
+        assert!(n < 4);
+        Reg::new(self.iface, 26 + n)
     }
     pub fn irq_timer_nfc(&mut self) -> Reg<'_, I, u8> {
         Reg::new(self.iface, 27)
