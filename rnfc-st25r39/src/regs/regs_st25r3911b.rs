@@ -132,7 +132,12 @@ impl<'a, I: Interface> Regs<'a, I> {
     pub fn gpt2(&mut self) -> Reg<'_, I, u8> {
         Reg::new(self.iface, 19)
     }
-    /// Main interrupt register
+    /// Main interrupt register mask, combined wth offset to other irq mask regs
+    pub fn irq_mask(&mut self, n: u8) -> Reg<'_, I, u8> {
+        assert!(n < 3);
+        Reg::new(self.iface, 20 + n)
+    }
+    /// Main interrupt register mask
     pub fn irq_mask_main(&mut self) -> Reg<'_, I, IrqMaskMain> {
         Reg::new(self.iface, 20)
     }
@@ -145,8 +150,13 @@ impl<'a, I: Interface> Regs<'a, I> {
         Reg::new(self.iface, 22)
     }
     /// Main interrupt register
-    pub fn irq_main(&mut self) -> Reg<'_, I, IrqMain> {
+    pub fn irq_main_direct(&mut self) -> Reg<'_, I, IrqMain> {
         Reg::new(self.iface, 23)
+    }
+    /// Main interrupt register, combined with offset to other regs
+    pub fn irq_main(&mut self, n: u8) -> Reg<'_, I, u8> {
+        assert!(n < 3);
+        Reg::new(self.iface, 23 + n)
     }
     /// Mask timer and NFC interrupt register
     pub fn irq_timer_nfc(&mut self) -> Reg<'_, I, IrqTimerNfc> {
@@ -181,7 +191,7 @@ impl<'a, I: Interface> Regs<'a, I> {
         Reg::new(self.iface, 31)
     }
     /// A/D converter output register
-    pub fn ad_conv_result(&mut self) -> Reg<'_, I, u8> {
+    pub fn ad_result(&mut self) -> Reg<'_, I, u8> {
         Reg::new(self.iface, 32)
     }
     /// Antenna calibration control register
@@ -237,7 +247,7 @@ impl<'a, I: Interface> Regs<'a, I> {
         Reg::new(self.iface, 46)
     }
     /// Capacitive sensor display register
-    pub fn cap_sensor_disp(&mut self) -> Reg<'_, I, CapSensorDisp> {
+    pub fn cap_sensor_result(&mut self) -> Reg<'_, I, CapSensorDisp> {
         Reg::new(self.iface, 47)
     }
     /// Auxiliary display register

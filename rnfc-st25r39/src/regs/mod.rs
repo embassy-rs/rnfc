@@ -1,5 +1,5 @@
 #[cfg(feature = "st25r3911b")]
-mod regs_st25r3911b;
+pub mod regs_st25r3911b;
 use core::marker::PhantomData;
 
 #[cfg(feature = "st25r3911b")]

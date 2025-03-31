@@ -3,6 +3,9 @@
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[allow(unused)]
 pub enum Command {
+    // #[cfg(feature = "st25r3916")]
+    // Puts the chip in default state, st25r39{16,20} (same as after power-up)
+    // SetDefault1 = 0xC0,
     /// Puts the chip in default state (same as after power-up)
     SetDefault = 0xC1,
     /// Stops all activities and clears FIFO same as C3
@@ -55,7 +58,11 @@ pub enum Command {
     #[cfg(feature = "st25r3911b")]
     /// Starts sequence that activates the Tx, measures the modulation depth, and adapts it to comply with the specified modulation depth
     CalibrateModDepth = 0xD7,
-    /// Starts the sequence to adjust the driver timing. Called CalibrateAntenna in st25r3911b
+    #[cfg(feature = "st25r3911b")]
+    /// Calibrates antenna
+    CalibrateAntenna = 0xD8,
+    #[cfg(feature = "st25r3916")]
+    /// Starts the sequence to adjust the driver timing.
     CalibrateDriverTiming = 0xD8,
     /// Measure phase between RFO and RFI signal
     MeasurePhase = 0xD9,
