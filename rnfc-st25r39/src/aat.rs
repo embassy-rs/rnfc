@@ -55,28 +55,15 @@ impl<I: Interface, IrqPin: InputPin + Wait> St25r39<I, IrqPin> {
             b = new_b;
         }
 
-        #[cfg(feature = "st25r3916")]
-        self.regs().ant_tune_a().write_value(a)?;
-        #[cfg(feature = "st25r3916")]
-        self.regs().ant_tune_a().write_value(b)?;
-
-        // st25r3911b chip might offer a better approach, simlar to what lib does
-        // self.regs().ant_tune_ctrl().write(|v| v.set_tre(1))  ect
-        // and whole procedure might need to be adjusted,
-        // to take "CalibrateAntenna" command into account, ant_tune_target ect
-        #[cfg(feature = "st25r3911b")]
-        self.regs().ant_tune_ctrl().write_value(a.into())?;
-        #[cfg(feature = "st25r3911b")]
-        self.regs().ant_tune_ctrl().write_value(b.into())?;
+        self.regs().ant_tune_a().write_value(a.into())?;
+        self.regs().ant_tune_a().write_value(b.into())?;
 
         Ok(())
     }
 
     async fn aat_measure(&mut self, a: u8, b: u8, conf: &AatConfig) -> Result<u32, Error<I::Error>> {
-        #[cfg(feature = "st25r3916")]
-        self.regs().ant_tune_a().write_value(a)?;
-        #[cfg(feature = "st25r3916")]
-        self.regs().ant_tune_a().write_value(b)?;
+        self.regs().ant_tune_a().write_value(a.into())?;
+        self.regs().ant_tune_a().write_value(b.into())?;
 
         // Wait for caps to settle.
         Timer::after(Duration::from_millis(1)).await;

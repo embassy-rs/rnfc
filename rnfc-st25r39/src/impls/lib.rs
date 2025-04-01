@@ -3,13 +3,13 @@ use embassy_time::{Duration, Instant};
 use embedded_hal::digital::InputPin;
 use embedded_hal_async::digital::Wait;
 
-// use crate::aat::AatConfig;
 use crate::commands::Command;
 use crate::interface::Interface;
 use crate::regs::{self, Regs};
 use crate::{Error, Mode, St25r39};
 pub const DEFAULT_TIMEOUT: Duration = Duration::from_millis(500);
-use crate::impls::*;
+pub use crate::impls::interrupts::Interrupt;
+pub use crate::impls::{FieldOnError, WakeupConfig, WakeupMethodConfig, WakeupReference};
 
 impl<I: Interface, IrqPin: InputPin + Wait> St25r39<I, IrqPin> {
     pub async fn new(iface: I, irq: IrqPin) -> Result<Self, Error<I::Error>> {
@@ -124,14 +124,8 @@ impl<I: Interface, IrqPin: InputPin + Wait> St25r39<I, IrqPin> {
         // Adjust regulators
 
         // Before sending the adjust regulator command it is required to toggle the bit reg_s by setting it first to 1 and then reset it to 0.
-        #[cfg(feature = "st25r3916")]
         self.regs().regulator_control().write(|w| w.set_reg_s(true))?;
-        #[cfg(feature = "st25r3916")]
         self.regs().regulator_control().write(|w| w.set_reg_s(false))?;
-        #[cfg(feature = "st25r3911b")]
-        self.regs().regulator_volt_control().write(|w| w.set_reg_s(true))?;
-        #[cfg(feature = "st25r3911b")]
-        self.regs().regulator_volt_control().write(|w| w.set_reg_s(false))?;
 
         self.cmd_wait(Command::AdjustRegulators).await?;
 
@@ -440,7 +434,7 @@ impl<I: Interface, IrqPin: InputPin + Wait> St25r39<I, IrqPin> {
             .regulator_control()
             .write(|w| w.set_mpsv(regs::RegulatorControlMpsv::VDD))?;
         #[cfg(feature = "st25r3911b")]
-        self.regs().regulator_volt_control().write(|w| w.set_mpsv(0))?;
+        self.regs().regulator_control().write(|w| w.set_mpsv(0))?;
 
         self.cmd_wait(Command::MeasureVdd).await?;
         let res = self.regs().ad_result().read()? as u32;

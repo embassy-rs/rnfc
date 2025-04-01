@@ -2,10 +2,18 @@
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[allow(unused)]
 pub enum Interrupt {
+    #[cfg(feature = "st25r3911b")]
     /// IRQ due to error and wake-up timer
     Err = 0,
+    #[cfg(feature = "st25r3916")]
+    /// RFU interrupt
+    Rfu = 0,
+    #[cfg(feature = "st25r3911b")]
     /// IRQ due to timer or NFC event
     Tim = 1,
+    #[cfg(feature = "st25r3916")]
+    /// automatic reception restart interrupt
+    RxRest = 1,
     /// bit collision interrupt
     Col = 2,
     /// end of transmission interrupt
@@ -50,4 +58,28 @@ pub enum Interrupt {
     Par = 22,
     /// CRC error interrupt
     Crc = 23,
+    #[cfg(feature = "st25r3916")]
+    /// 106kb/s Passive target state interrupt: Active
+    WuA = 24,
+    #[cfg(feature = "st25r3916")]
+    /// 106kb/s Passive target state interrupt: Active*
+    WuAX = 25,
+    #[cfg(feature = "st25r3916")]
+    /// RFU2 interrupt
+    Rfu2 = 26,
+    #[cfg(feature = "st25r3916")]
+    /// 212/424b/s Passive target interrupt: Active
+    WuF = 27,
+    #[cfg(feature = "st25r3916")]
+    /// RXE with an automatic response interrupt
+    RxePta = 28,
+    #[cfg(feature = "st25r3916")]
+    /// Anticollision done and Field On interrupt
+    Apon = 29,
+    #[cfg(feature = "st25r3916")]
+    /// Passive target slot number water level interrupt
+    SlWl = 30,
+    #[cfg(feature = "st25r3916")]
+    /// PPON2 Field on waiting Timer interrupt
+    Ppon2 = 31,
 }

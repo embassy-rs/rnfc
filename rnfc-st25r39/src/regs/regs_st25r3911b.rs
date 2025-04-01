@@ -195,7 +195,7 @@ impl<'a, I: Interface> Regs<'a, I> {
         Reg::new(self.iface, 32)
     }
     /// Antenna calibration control register
-    pub fn ant_tune_ctrl(&mut self) -> Reg<'_, I, AntTuneCtrl> {
+    pub fn ant_tune_a(&mut self) -> Reg<'_, I, AntTuneCtrl> {
         Reg::new(self.iface, 33)
     }
     /// Antenna calibration target register
@@ -227,7 +227,7 @@ impl<'a, I: Interface> Regs<'a, I> {
         Reg::new(self.iface, 41)
     }
     /// Regulator voltage control register
-    pub fn regulator_volt_control(&mut self) -> Reg<'_, I, RegulatorVoltControl> {
+    pub fn regulator_control(&mut self) -> Reg<'_, I, RegulatorVoltControl> {
         Reg::new(self.iface, 42)
     }
     /// Regulator and timer display register

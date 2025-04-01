@@ -8,7 +8,8 @@ use rnfc_traits::iso14443a_ll as ll;
 
 use crate::commands::Command;
 use crate::fmt::Bytes;
-use crate::impls::{FieldOnError, Interrupt};
+use crate::impls::interrupts::Interrupt;
+use crate::impls::FieldOnError;
 use crate::interface::Interface;
 use crate::St25r39;
 
@@ -158,29 +159,14 @@ impl<'d, I: Interface + 'd, IrqPin: InputPin + Wait + 'd> ll::Reader for Iso1444
         this.cmd(cmd)?;
 
         // Wait for tx ended
-        #[cfg(feature = "st25r3916")]
         this.irq_wait(Interrupt::Txe).await?;
-        // #[cfg(feature = "st25r3911b")]
-        // this.irq_wait(|| this.regs().irq_main().read().expect("be readable").txe()).await?;
 
         // Wait for RX started
-        #[cfg(feature = "st25r3916")]
         this.irq_wait_timeout(Interrupt::Rxs, Duration::from_millis(fwt_ms as _))
             .await?;
-        // #[cfg(feature = "st25r3911b")]
-        // this.irq_wait_timeout(
-        //         || this.regs().irq_main().read().expect("be readable").rxs(),
-        //         Duration::from_millis(fwt_ms as _));
-        #[cfg(not(feature = "st25r3916"))]
-        let _ = fwt_ms;
 
-        #[cfg(feature = "st25r3916")]
         this.irq_wait_timeout(Interrupt::Rxs, Duration::from_millis(fwt_ms as _))
             .await?;
-        // #[cfg(feature = "st25r3911b")]
-        // with_timeout(Duration::from_millis(fwt_ms as _),
-        //     async { this.regs().irq_main().read().expect("read reg ok").txe() }
-        // );
 
         // Wait for rx ended or error
         // The timeout should never hit, it's just for safety.

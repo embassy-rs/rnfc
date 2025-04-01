@@ -1,16 +1,6 @@
-#[cfg(feature = "st25r3916")]
-pub mod lib_st25r3916;
-#[cfg(feature = "st25r3916")]
-pub use lib_st25r3916::*;
-
-#[cfg(feature = "st25r3911b")]
-pub mod lib_st25r3911b;
-#[cfg(feature = "st25r3911b")]
-pub use lib_st25r3911b::*;
-
+pub mod interrupts;
 pub mod lib;
 
-// TODO: check wup and other wake-up registers in st25r3911b
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub enum WakeupPeriod {
