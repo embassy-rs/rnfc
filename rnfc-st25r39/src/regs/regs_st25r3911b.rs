@@ -134,7 +134,7 @@ impl<'a, I: Interface> Regs<'a, I> {
     }
     /// Main interrupt register mask, combined wth offset to other irq mask regs
     pub fn irq_mask(&mut self, n: u8) -> Reg<'_, I, u8> {
-        assert!(n < 3);
+        assert!(n < 5);
         Reg::new(self.iface, 20 + n)
     }
     /// Main interrupt register mask
@@ -155,7 +155,7 @@ impl<'a, I: Interface> Regs<'a, I> {
     }
     /// Main interrupt register, combined with offset to other regs
     pub fn irq_main(&mut self, n: u8) -> Reg<'_, I, u8> {
-        assert!(n < 3);
+        assert!(n < 5);
         Reg::new(self.iface, 23 + n)
     }
     /// Mask timer and NFC interrupt register

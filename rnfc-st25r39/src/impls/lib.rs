@@ -469,7 +469,7 @@ impl<I: Interface, IrqPin: InputPin + Wait> St25r39<I, IrqPin> {
 
     pub fn irq_update(&mut self) -> Result<(), Error<I::Error>> {
         #[cfg(feature = "st25r3911b")]
-        const REGS_CNT: u8 = 3;
+        const REGS_CNT: u8 = 5;
         #[cfg(feature = "st25r3916")]
         const REGS_CNT: u8 = 4;
         for i in 0..REGS_CNT {
