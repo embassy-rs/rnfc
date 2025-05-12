@@ -1,6 +1,8 @@
 #![feature(arbitrary_self_types)]
 
-use std::fmt::Display;
+mod bindings;
+mod errors;
+
 use std::mem::ManuallyDrop;
 use std::sync::Arc;
 
@@ -10,22 +12,11 @@ use bindings::android::nfc::tech::{IsoDep, NfcA};
 use bindings::android::nfc::{NfcAdapter, NfcAdapter_ReaderCallback, NfcAdapter_ReaderCallbackProxy, Tag as NfcTag};
 use java_spaghetti::sys::{JNIEnv, jobject};
 use java_spaghetti::{ByteArray, Env, Global, Local, Null, PrimitiveArray, Ref};
-use log::info;
+use log::{info, warn};
 use rnfc_traits::iso_dep::Reader as IsoDepReader;
-use rnfc_traits::iso14443a::{self, Reader as Iso14443aReader};
+use rnfc_traits::iso14443a::Reader as Iso14443aReader;
 
-mod bindings;
-
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub enum PollError {
-    TechNotSupported,
-}
-impl Display for PollError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{self:?}")
-    }
-}
-impl std::error::Error for PollError {}
+pub use crate::errors::*;
 
 pub struct Reader<'a> {
     activity: Local<'a, Activity>,
@@ -34,42 +25,44 @@ pub struct Reader<'a> {
 }
 
 impl<'a> Reader<'a> {
-    pub unsafe fn new(env: *mut JNIEnv, activity: jobject) -> Self {
+    pub unsafe fn new(env: *mut JNIEnv, activity: jobject) -> Result<Self, NewReaderError> {
         assert!(!env.is_null());
         assert!(!activity.is_null());
         let env = unsafe { Env::from_raw(env) };
         let activity = unsafe { Ref::from_raw(env, activity).as_local() };
 
         let env = activity.env();
-        let adapter = NfcAdapter::getDefaultAdapter(env, &activity).unwrap().unwrap();
+        let Some(adapter) = NfcAdapter::getDefaultAdapter(env, &activity)? else {
+            return Err(NewReaderError::NfcNotSupported);
+        };
 
         let (sender, receiver) = async_channel::bounded(1);
         let callback: Local<NfcAdapter_ReaderCallback> =
-            NfcAdapter_ReaderCallback::new_proxy(env, Arc::new(ReaderCallback { sender })).unwrap();
-        adapter
-            .enableReaderMode(
-                &activity,
-                callback,
-                NfcAdapter::FLAG_READER_NFC_A | NfcAdapter::FLAG_READER_SKIP_NDEF_CHECK,
-                Null,
-            )
-            .unwrap();
+            NfcAdapter_ReaderCallback::new_proxy(env, Arc::new(ReaderCallback { sender }))?;
+        adapter.enableReaderMode(
+            &activity,
+            callback,
+            NfcAdapter::FLAG_READER_NFC_A | NfcAdapter::FLAG_READER_SKIP_NDEF_CHECK,
+            Null,
+        )?;
 
-        Self {
+        Ok(Self {
             activity,
             adapter,
             receiver,
-        }
+        })
     }
 
-    pub async fn poll(&mut self) -> Result<Tag<'_>, PollError> {
+    pub async fn poll(&mut self) -> Result<Tag<'_>, AsTechError> {
         let env = self.activity.env();
 
         let tag = self.receiver.recv().await.unwrap();
         let tag = tag.as_local(env);
 
-        let uid = tag.getId().unwrap().unwrap();
-        let uid = i8tou8_vec(uid.as_vec());
+        let uid = match tag.getId()? {
+            Some(uid) => i8tou8_vec(uid.as_vec()),
+            None => Vec::new(),
+        };
 
         Ok(Tag { tag, uid })
     }
@@ -77,23 +70,9 @@ impl<'a> Reader<'a> {
 
 impl<'a> Drop for Reader<'a> {
     fn drop(&mut self) {
-        self.adapter.disableReaderMode(&self.activity).unwrap();
-    }
-}
-
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub enum TransceiveError {
-    BufferTooSmall,
-}
-impl Display for TransceiveError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{self:?}")
-    }
-}
-impl std::error::Error for TransceiveError {}
-impl iso14443a::Error for TransceiveError {
-    fn kind(&self) -> rnfc_traits::iso14443a_ll::ErrorKind {
-        rnfc_traits::iso14443a_ll::ErrorKind::Other
+        if let Err(e) = self.adapter.disableReaderMode(&self.activity) {
+            warn!("failed disabling reader mode: {e:?}")
+        }
     }
 }
 
@@ -107,13 +86,13 @@ impl<'a> Tag<'a> {
         self.uid.clone()
     }
 
-    pub fn as_iso_dep(&mut self) -> Result<IsoDepTag<'_>, PollError> {
+    pub fn as_iso_dep(&mut self) -> Result<IsoDepTag<'_>, AsTechError> {
         let env = self.tag.env();
-        let Some(tech) = IsoDep::get(env, &self.tag).unwrap() else {
-            return Err(PollError::TechNotSupported);
+        let Some(tech) = IsoDep::get(env, &self.tag)? else {
+            return Err(AsTechError::TechNotSupported);
         };
 
-        tech.connect().unwrap();
+        tech.connect()?;
 
         Ok(IsoDepTag {
             tag: self.tag.clone(),
@@ -122,13 +101,13 @@ impl<'a> Tag<'a> {
         })
     }
 
-    pub fn as_iso14443_a(&mut self) -> Result<Iso14443aTag<'_>, PollError> {
+    pub fn as_iso14443_a(&mut self) -> Result<Iso14443aTag<'_>, AsTechError> {
         let env = self.tag.env();
-        let Some(tech) = NfcA::get(env, &self.tag).unwrap() else {
-            return Err(PollError::TechNotSupported);
+        let Some(tech) = NfcA::get(env, &self.tag)? else {
+            return Err(AsTechError::TechNotSupported);
         };
 
-        tech.connect().unwrap();
+        tech.connect()?;
 
         Ok(Iso14443aTag {
             tag: self.tag.clone(),
@@ -152,7 +131,9 @@ impl<'a> Iso14443aTag<'a> {
 
 impl<'a> Drop for Iso14443aTag<'a> {
     fn drop(&mut self) {
-        self.tech.close().unwrap();
+        if let Err(e) = self.tech.close() {
+            warn!("failed closing iso14443a tech: {e:?}")
+        }
     }
 }
 
@@ -173,7 +154,7 @@ impl<'a> Iso14443aReader for Iso14443aTag<'a> {
 
     async fn transceive(&mut self, tx: &[u8], rx: &mut [u8], _timeout_1fc: u32) -> Result<usize, Self::Error> {
         let tx = ByteArray::new_from(self.tag.env(), u8toi8(tx));
-        let rxd = self.tech.transceive(tx).unwrap().unwrap();
+        let rxd = self.tech.transceive(tx)?.unwrap();
         let rxd = i8tou8_vec(rxd.as_vec());
         if rxd.len() > rx.len() {
             return Err(TransceiveError::BufferTooSmall);
@@ -197,7 +178,9 @@ impl<'a> IsoDepTag<'a> {
 
 impl<'a> Drop for IsoDepTag<'a> {
     fn drop(&mut self) {
-        self.tech.close().unwrap();
+        if let Err(e) = self.tech.close() {
+            warn!("failed closing isodep tech: {e:?}")
+        }
     }
 }
 
@@ -206,7 +189,7 @@ impl<'a> IsoDepReader for IsoDepTag<'a> {
 
     async fn transceive(&mut self, tx: &[u8], rx: &mut [u8]) -> Result<usize, Self::Error> {
         let tx = ByteArray::new_from(self.tag.env(), u8toi8(tx));
-        let rxd = self.tech.transceive(tx).unwrap().unwrap();
+        let rxd = self.tech.transceive(tx)?.unwrap();
         let rxd = i8tou8_vec(rxd.as_vec());
         if rxd.len() > rx.len() {
             return Err(TransceiveError::BufferTooSmall);
@@ -228,7 +211,13 @@ impl Drop for ReaderCallback {
 
 impl NfcAdapter_ReaderCallbackProxy for ReaderCallback {
     fn onTagDiscovered<'env>(&self, _env: Env<'env>, tag: Option<Ref<'env, NfcTag>>) {
-        self.sender.try_send(tag.unwrap().as_global()).unwrap();
+        let Some(tag) = tag else {
+            warn!("onTagDiscovered got null tag?");
+            return;
+        };
+        if let Err(e) = self.sender.try_send(tag.as_global()) {
+            warn!("onTagDiscovered failed to send tag: {e:?}");
+        }
     }
 }
 
