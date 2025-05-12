@@ -1,0 +1,23 @@
+{
+    "folders": [
+        {
+            "path": ".."
+        }
+    ],
+    "settings": {
+        "editor.formatOnSave": true,
+        "[toml]": {
+            "editor.formatOnSave": false
+        },
+        "rust-analyzer.check.allTargets": false,
+        "rust-analyzer.cargo.target": "aarch64-linux-android",
+        "rust-analyzer.cargo.extraEnv": {
+            "TARGET_AR": "/usr/bin/llvm-ar",
+            "CC_aarch64_linux_android": "/home/dirbaio/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang",
+            "CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER": "/home/dirbaio/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang",
+        },
+        "rust-analyzer.linkedProjects": [
+            "rnfc-android/Cargo.toml",
+        ],
+    }
+}

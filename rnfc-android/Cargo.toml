@@ -1,0 +1,10 @@
+[package]
+name = "rnfc-android"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+async-channel = "2.3.1"
+java-spaghetti = { git = "https://github.com/Dirbaio/java-spaghetti", rev = "fc18c6b4d4c3fe6d1719066bef350c69bff72f3d" }
+log = "0.4.27"
+rnfc-traits = { path = "../rnfc-traits" }
