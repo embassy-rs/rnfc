@@ -9869,7 +9869,7 @@ pub mod android {
                             ))
                         })
                         .as_raw();
-                    __jni_env.get_object_field(__jni_class, __jni_field)
+                    __jni_env.get_object_field(self.as_raw(), __jni_field)
                 }
             }
             #[doc = "**get** public final [peerLlcpMajorVersion](https://developer.android.com/reference/android/nfc/NfcEvent.html#peerLlcpMajorVersion)"]
@@ -9887,7 +9887,7 @@ pub mod android {
                             ))
                         })
                         .as_raw();
-                    __jni_env.get_int_field(__jni_class, __jni_field)
+                    __jni_env.get_int_field(self.as_raw(), __jni_field)
                 }
             }
             #[doc = "**get** public final [peerLlcpMinorVersion](https://developer.android.com/reference/android/nfc/NfcEvent.html#peerLlcpMinorVersion)"]
@@ -9905,7 +9905,7 @@ pub mod android {
                             ))
                         })
                         .as_raw();
-                    __jni_env.get_int_field(__jni_class, __jni_field)
+                    __jni_env.get_int_field(self.as_raw(), __jni_field)
                 }
             }
         }
