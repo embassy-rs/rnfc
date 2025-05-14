@@ -165,7 +165,7 @@ impl GlobalTag {
     /// SAFETY:
     /// - `env` must be a valid JNIEnv pointer
     /// - The current thread must stay attached to the VM for the duration the `Tag` exists.
-    pub unsafe fn as_local(&self, env: *mut JNIEnv) -> Tag<'_> {
+    pub unsafe fn as_local<'env>(&self, env: *mut JNIEnv) -> Tag<'env> {
         assert!(!env.is_null());
         let env = unsafe { Env::from_raw(env) };
 
