@@ -5,6 +5,6 @@ edition = "2024"
 
 [dependencies]
 async-channel = "2.3.1"
-java-spaghetti = { git = "https://github.com/Dirbaio/java-spaghetti", rev = "d61bc3b8b969561a12a8f57d6e5b27fade99d973" }
+java-spaghetti = { git = "https://github.com/Dirbaio/java-spaghetti", rev = "4789417239aade099d1c6af361929c0a5fcac5fa" }
 log = "0.4.27"
 rnfc-traits = { path = "../rnfc-traits" }

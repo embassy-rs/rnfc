@@ -9772,12 +9772,14 @@ pub mod android {
             }
         }
         #[unsafe(no_mangle)]
-        extern "system" fn Java_com_github_embassy_1rs_rnfc_proxy_android_nfc_NfcAdapter_1ReaderCallback_native_1onTagDiscovered__JLandroid_nfc_Tag_2(
-            __jni_env: ::java_spaghetti::Env<'_>,
+        extern "system" fn Java_com_github_embassy_1rs_rnfc_proxy_android_nfc_NfcAdapter_1ReaderCallback_native_1onTagDiscovered__JLandroid_nfc_Tag_2<
+            'env,
+        >(
+            __jni_env: ::java_spaghetti::Env<'env>,
             _class: *mut (),
             ptr: i64,
             arg0: ::java_spaghetti::Arg<Tag>,
-        ) {
+        ) -> () {
             let ptr: *const std::sync::Arc<dyn NfcAdapter_ReaderCallbackProxy> =
                 ::std::ptr::with_exposed_provenance(ptr as usize);
             unsafe { (*ptr).onTagDiscovered(__jni_env, arg0.into_ref(__jni_env)) }
@@ -9787,7 +9789,7 @@ pub mod android {
                 &self,
                 env: ::java_spaghetti::Env<'env>,
                 arg0: ::std::option::Option<::java_spaghetti::Ref<'env, Tag>>,
-            );
+            ) -> ();
         }
         #[unsafe(no_mangle)]
         extern "system" fn Java_com_github_embassy_1rs_rnfc_proxy_android_nfc_NfcAdapter_1ReaderCallback_native_1finalize__J(

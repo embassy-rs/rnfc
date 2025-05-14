@@ -11,20 +11,46 @@ use bindings::android::app::Activity;
 use bindings::android::nfc::tech::{IsoDep, NfcA};
 use bindings::android::nfc::{NfcAdapter, NfcAdapter_ReaderCallback, NfcAdapter_ReaderCallbackProxy, Tag as NfcTag};
 use java_spaghetti::sys::{JNIEnv, jobject};
-use java_spaghetti::{ByteArray, Env, Global, Local, Null, PrimitiveArray, Ref};
+use java_spaghetti::{ByteArray, Env, Global, Local, Null, PrimitiveArray, Ref, VM};
 use log::{info, warn};
 use rnfc_traits::iso_dep::Reader as IsoDepReader;
 use rnfc_traits::iso14443a::Reader as Iso14443aReader;
 
 pub use crate::errors::*;
 
+/// Utility to hold reader mode enabled.
+///
+/// Disabling reader mode makes the `Tag` objects stop working.
+/// Therefore, we make both the reader and the tags hold an Arc of this
+/// struct, so reader mode is disabled when both reader and all tags are dropped.
+struct ReaderModeHolder {
+    vm: VM,
+    activity: Global<Activity>,
+    adapter: Global<NfcAdapter>,
+}
+
+impl Drop for ReaderModeHolder {
+    fn drop(&mut self) {
+        self.vm.with_env(|env| {
+            let adapter = self.adapter.as_local(env);
+            if let Err(e) = adapter.disableReaderMode(&self.activity) {
+                warn!("failed disabling reader mode: {e:?}")
+            }
+        })
+    }
+}
+
 pub struct Reader<'a> {
     activity: Local<'a, Activity>,
-    adapter: Local<'a, NfcAdapter>,
     receiver: Receiver<Global<NfcTag>>,
+    holder: Arc<ReaderModeHolder>,
 }
 
 impl<'a> Reader<'a> {
+    /// SAFETY:
+    /// - `env` must be a valid JNIEnv pointer
+    /// - `activity` must be a valid object pointer to an instance of `android.app.Activity`
+    /// - The current thread must stay attached to the VM for the duration the `Reader` exists.
     pub unsafe fn new(env: *mut JNIEnv, activity: jobject) -> Result<Self, NewReaderError> {
         assert!(!env.is_null());
         assert!(!activity.is_null());
@@ -46,14 +72,20 @@ impl<'a> Reader<'a> {
             Null,
         )?;
 
+        let holder = Arc::new(ReaderModeHolder {
+            activity: activity.as_global(),
+            adapter: adapter.as_global(),
+            vm: env.vm(),
+        });
+
         Ok(Self {
             activity,
-            adapter,
             receiver,
+            holder,
         })
     }
 
-    pub async fn poll(&mut self) -> Result<Tag<'_>, AsTechError> {
+    pub async fn poll(&mut self) -> Result<Tag<'a>, AsTechError> {
         let env = self.activity.env();
 
         let tag = self.receiver.recv().await.unwrap();
@@ -64,21 +96,18 @@ impl<'a> Reader<'a> {
             None => Vec::new(),
         };
 
-        Ok(Tag { tag, uid })
-    }
-}
-
-impl<'a> Drop for Reader<'a> {
-    fn drop(&mut self) {
-        if let Err(e) = self.adapter.disableReaderMode(&self.activity) {
-            warn!("failed disabling reader mode: {e:?}")
-        }
+        Ok(Tag {
+            tag,
+            uid,
+            holder: self.holder.clone(),
+        })
     }
 }
 
 pub struct Tag<'a> {
     tag: Local<'a, NfcTag>,
     uid: Vec<u8>,
+    holder: Arc<ReaderModeHolder>,
 }
 
 impl<'a> Tag<'a> {
@@ -114,6 +143,36 @@ impl<'a> Tag<'a> {
             uid: self.uid.clone(),
             tech,
         })
+    }
+
+    pub fn into_global(self) -> GlobalTag {
+        GlobalTag {
+            tag: self.tag.as_global(),
+            uid: self.uid,
+            holder: self.holder,
+        }
+    }
+}
+
+pub struct GlobalTag {
+    tag: Global<NfcTag>,
+    uid: Vec<u8>,
+    holder: Arc<ReaderModeHolder>,
+}
+
+impl GlobalTag {
+    /// SAFETY:
+    /// - `env` must be a valid JNIEnv pointer
+    /// - The current thread must stay attached to the VM for the duration the `Tag` exists.
+    pub unsafe fn as_local(&self, env: *mut JNIEnv) -> Tag<'_> {
+        assert!(!env.is_null());
+        let env = unsafe { Env::from_raw(env) };
+
+        Tag {
+            tag: self.tag.as_local(env),
+            uid: self.uid.clone(),
+            holder: self.holder.clone(),
+        }
     }
 }
 
