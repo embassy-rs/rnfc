@@ -31,6 +31,7 @@ struct ReaderModeHolder {
 
 impl Drop for ReaderModeHolder {
     fn drop(&mut self) {
+        info!("disabling reader mode");
         self.vm.with_env(|env| {
             let adapter = self.adapter.as_local(env);
             if let Err(e) = adapter.disableReaderMode(&self.activity) {
@@ -260,12 +261,6 @@ impl<'a> IsoDepReader for IsoDepTag<'a> {
 
 struct ReaderCallback {
     sender: Sender<Global<NfcTag>>,
-}
-
-impl Drop for ReaderCallback {
-    fn drop(&mut self) {
-        info!("drop lol")
-    }
 }
 
 impl NfcAdapter_ReaderCallbackProxy for ReaderCallback {
