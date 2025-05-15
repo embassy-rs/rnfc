@@ -86,7 +86,6 @@ impl Reader {
                             let uid = unsafe { t.identifier().to_vec() };
                             return Ok(Tag {
                                 session: self.session.clone(),
-                                _delegate: self._delegate.clone(),
                                 uid,
                                 tag,
                             });
@@ -94,7 +93,6 @@ impl Reader {
                             let uid = unsafe { t.identifier().to_vec() };
                             return Ok(Tag {
                                 session: self.session.clone(),
-                                _delegate: self._delegate.clone(),
                                 uid,
                                 tag,
                             });
@@ -141,7 +139,6 @@ impl Drop for Reader {
 /// An NFC tag that was found by the reader.
 pub struct Tag {
     session: Retained<NFCTagReaderSession>,
-    _delegate: Retained<SessionDelegate>,
     tag: Retained<ProtocolObject<dyn NFCTag>>,
     uid: Vec<u8>,
 }
@@ -166,7 +163,9 @@ impl Tag {
                 info!("connect succeeded!");
                 s.try_broadcast(true).unwrap();
             } else {
-                info!("connect failed!");
+                let e = unsafe { &mut *e };
+                let desc = e.localizedDescription();
+                info!("connect failed! {}", desc);
                 s.try_broadcast(false).unwrap();
             }
         });
