@@ -17,7 +17,7 @@ use embedded_hal::digital::InputPin;
 use embedded_hal_async::digital::Wait;
 pub use interface::{I2cInterface, Interface, SpiInterface};
 
-use self::regs::Regs;
+use self::regs::{Regs, TxDriverDRes};
 
 const DEFAULT_TIMEOUT: Duration = Duration::from_millis(500);
 
@@ -438,7 +438,7 @@ impl<I: Interface, IrqPin: InputPin + Wait> St25r39<I, IrqPin> {
             w.set_en_fd(regs::OpControlEnFd::AUTO_EFD);
         })?;
         self.regs().tx_driver().write(|w| {
-            w.set_d_res(3);
+            w.set_d_res(regs::TxDriverDRes::_1_61);
         })?;
         Ok(())
     }
@@ -704,7 +704,7 @@ impl<'a, I: Interface, IrqPin: InputPin + Wait> Raw<'a, I, IrqPin> {
     pub async fn driver_hi_z(&mut self) -> Result<(), Error<I::Error>> {
         self.inner.mode_off()?;
         self.inner.regs().tx_driver().write(|w| {
-            w.set_d_res(15); // hi-z
+            w.set_d_res(regs::TxDriverDRes::_HIGH_Z); // hi-z
         })?;
 
         Ok(())
