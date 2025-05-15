@@ -26,7 +26,7 @@ pub enum ReaderError {
     InvalidData,
     CommandFailed,
     BufferTooSmall,
-    Inactive,
+    Closed,
     Internal,
 }
 
@@ -41,6 +41,7 @@ pub struct Reader {
     session: Retained<NFCTagReaderSession>,
     _delegate: Retained<SessionDelegate>,
     events: Receiver<NFCReaderEvent>,
+    active: bool,
 }
 
 impl Reader {
@@ -70,6 +71,7 @@ impl Reader {
             session,
             _delegate: delegate,
             events: receiver,
+            active: false,
         };
         reader.start().await?;
         Ok(reader)
@@ -77,6 +79,9 @@ impl Reader {
 
     /// Poll until the reader has detected a tag.
     pub async fn poll(&mut self) -> Result<Tag, ReaderError> {
+        if !self.active {
+            return Err(ReaderError::Closed);
+        }
         loop {
             unsafe { self.session.restartPolling() }
             match self.events.recv().await {
@@ -100,12 +105,15 @@ impl Reader {
                     }
                 }
                 Ok(NFCReaderEvent::SessionInactive) => {
-                    return Err(ReaderError::Inactive);
+                    self.active = false;
+                    return Err(ReaderError::Closed);
                 }
                 Ok(NFCReaderEvent::SessionActive) => {
                     panic!("unexpected session active event");
                 }
-                Err(_) => return Err(ReaderError::Internal),
+                Err(_) => {
+                    return Err(ReaderError::Internal);
+                }
             }
         }
     }
@@ -119,19 +127,22 @@ impl Reader {
                 _ => {}
             }
         }
+        self.active = true;
         Ok(())
     }
 }
 
 impl Drop for Reader {
     fn drop(&mut self) {
-        unsafe { self.session.invalidateSession() }
-        loop {
-            match self.events.try_recv() {
-                Ok(NFCReaderEvent::SessionInactive) => break,
-                _ => {}
+        if self.active {
+            unsafe { self.session.invalidateSession() }
+            loop {
+                match self.events.try_recv() {
+                    Ok(NFCReaderEvent::SessionInactive) => break,
+                    _ => {}
+                }
+                unsafe { NSThread::sleepForTimeInterval(0.5) }
             }
-            unsafe { NSThread::sleepForTimeInterval(0.5) }
         }
     }
 }
