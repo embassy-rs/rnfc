@@ -1,0 +1,17 @@
+[package]
+name = "rnfc-ios"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+async-channel = "2.3.1"
+log = "0.4.27"
+rnfc-traits = { path = "../rnfc-traits" }
+async-broadcast = "0.7.2"
+futures-core = "0.3.28"
+futures-lite = "2.6.0"
+objc2 = "0.6.1"
+objc2-foundation = "0.3.1"
+objc2-core-nfc = "0.3.1"
+dispatch2 = "0.3.0"
+block2 = "0.6.1"
