@@ -86,6 +86,7 @@ impl Reader {
                             let uid = unsafe { t.identifier().to_vec() };
                             return Ok(Tag {
                                 session: self.session.clone(),
+                                _delegate: self._delegate.clone(),
                                 uid,
                                 tag,
                             });
@@ -93,6 +94,7 @@ impl Reader {
                             let uid = unsafe { t.identifier().to_vec() };
                             return Ok(Tag {
                                 session: self.session.clone(),
+                                _delegate: self._delegate.clone(),
                                 uid,
                                 tag,
                             });
@@ -139,6 +141,7 @@ impl Drop for Reader {
 /// An NFC tag that was found by the reader.
 pub struct Tag {
     session: Retained<NFCTagReaderSession>,
+    _delegate: Retained<SessionDelegate>,
     tag: Retained<ProtocolObject<dyn NFCTag>>,
     uid: Vec<u8>,
 }
