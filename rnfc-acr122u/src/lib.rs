@@ -120,11 +120,11 @@ impl Device {
         Ok(())
     }
 
-    pub async fn poll(&mut self) -> Result<Card<'_>, Error> {
+    pub async fn poll(&mut self) -> Result<Option<Card<'_>>, Error> {
         let res = self.pn53x_cmd(0x4a, &[0x01, 0x00]).await?;
 
         if res[0] != 0x01 {
-            return Err(Error::other("no card present"));
+            return Ok(None);
         }
         assert!(res[1] == 0x01);
 
@@ -140,13 +140,13 @@ impl Device {
         trace!("uid: {:02x?}", uid);
         trace!("ats: {:02x?}", ats);
 
-        Ok(Card {
+        Ok(Some(Card {
             dev: self,
             atqa,
             sak,
             uid,
             ats,
-        })
+        }))
     }
 
     async fn pn53x_cmd(&mut self, code: u8, data: &[u8]) -> Result<Vec<u8>, Error> {
