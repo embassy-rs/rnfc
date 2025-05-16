@@ -82,6 +82,35 @@ impl Device {
         // SetParameters: Enable auto-RATS, auto-ATR_RES
         self.pn53x_cmd(0x12, &[0x14]).await?;
 
+        self.pn53x_cmd(0x32, &hex!("02 000b0a")).await?;
+        self.pn53x_cmd(0x32, &hex!("04 00")).await?;
+        self.pn53x_cmd(0x32, &hex!("05 010001")).await?;
+
+        // analog settings for Type A 106 kbps
+        // Original settings are 59 F4 3F 11 4D 85 61 6F 26 62 87
+        // but RxThreshold=0xF5 makes it work better on clone ACR122u's.
+        self.pn53x_cmd(0x32, &hex!("0a 59 F4 3F 11 4D f5 61 6F 26 62 87")).await?;
+        //                             |  |  |  |  |  |  |  |  |  |  TxBitPhase
+        //                             |  |  |  |  |  |  |  |  |  MifNFC
+        //                             |  |  |  |  |  |  |  |  ModWidth
+        //                             |  |  |  |  |  |  |  GsNOff
+        //                             |  |  |  |  |  |  Demod when own RF is Off
+        //                             |  |  |  |  |  RxThreshold
+        //                             |  |  |  |  Demod when own RF is On
+        //                             |  |  |  ModGsP
+        //                             |  |  CWGsP
+        //                             |  GsNOn
+        //                             RFCfg
+
+        // analog settings for Type F 212/424 kbps
+        self.pn53x_cmd(0x32, &hex!("0b 69 FF 3F 11 41 85 61 6F")).await?;
+
+        // analog settings for Type B 106 kbps
+        self.pn53x_cmd(0x32, &hex!("0c FF 04 85")).await?;
+
+        // analog settings for 14443-4 212/424/848 kbps
+        self.pn53x_cmd(0x32, &hex!("0d 85 15 8A 85 08 B2 85 01 DA")).await?;
+
         Ok(())
     }
 
