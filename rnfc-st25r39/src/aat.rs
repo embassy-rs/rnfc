@@ -54,15 +54,16 @@ impl<I: Interface, IrqPin: InputPin + Wait> St25r39<I, IrqPin> {
             a = new_a;
             b = new_b;
         }
-        self.regs().ant_tune_a().write_value(a)?;
-        self.regs().ant_tune_a().write_value(b)?;
+
+        self.regs().ant_tune_a().write_value(a.into())?;
+        self.regs().ant_tune_a().write_value(b.into())?;
 
         Ok(())
     }
 
     async fn aat_measure(&mut self, a: u8, b: u8, conf: &AatConfig) -> Result<u32, Error<I::Error>> {
-        self.regs().ant_tune_a().write_value(a)?;
-        self.regs().ant_tune_a().write_value(b)?;
+        self.regs().ant_tune_a().write_value(a.into())?;
+        self.regs().ant_tune_a().write_value(b.into())?;
 
         // Wait for caps to settle.
         Timer::after(Duration::from_millis(1)).await;

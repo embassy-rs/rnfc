@@ -11,7 +11,7 @@ default = [
 ]
 
 [dependencies]
-rnfc-st25r39 = { path = "../../rnfc-st25r39", features = [ "defmt" ] }
+rnfc-st25r39 = { path = "../../rnfc-st25r39", features = [ "defmt", "st25r3916" ] }
 rnfc = { path = "../../rnfc", features = [ "defmt" ] }
 
 embassy-executor = { version = "0.7", features = ["defmt", "nightly", "arch-cortex-m", "executor-thread"] }

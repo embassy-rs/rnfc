@@ -1,10 +1,17 @@
 use core::fmt::Debug;
 
-use embassy_time::{with_timeout, Timer};
+use embassy_futures::yield_now;
+use embassy_time::{with_timeout, Duration, Timer};
+use embedded_hal::digital::InputPin;
+use embedded_hal_async::digital::Wait;
 use rnfc_traits::iso14443a_ll as ll;
 
+use crate::commands::Command;
 use crate::fmt::Bytes;
-use crate::*;
+use crate::impls::interrupts::Interrupt;
+use crate::impls::FieldOnError;
+use crate::interface::Interface;
+use crate::St25r39;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
@@ -124,6 +131,8 @@ impl<'d, I: Interface + 'd, IrqPin: InputPin + Wait + 'd> ll::Reader for Iso1444
                 (false, Command::TransmitWithCrc)
             }
         };
+
+        #[cfg(feature = "st25r3916")]
         this.regs().corr_conf1().write(|w| {
             w.0 = 0x13;
             w.set_corr_s6(!is_anticoll);
@@ -139,7 +148,10 @@ impl<'d, I: Interface + 'd, IrqPin: InputPin + Wait + 'd> ll::Reader for Iso1444
             // Disable Automatic Gain Control (AGC) for better detection of collisions if using Coherent Receiver
             w.set_agc_en(!is_anticoll);
             w.set_agc_m(true); // AGC operates during complete receive period
-            w.set_agc6_3(true); // 0: AGC ratio 3
+            #[cfg(feature = "st25r3916")]
+            {
+                w.set_agc6_3(true); // 0: AGC ratio 3
+            }
             w.set_sqm_dyn(true); // Automatic squelch activation after end of TX
         })?;
 
@@ -150,6 +162,9 @@ impl<'d, I: Interface + 'd, IrqPin: InputPin + Wait + 'd> ll::Reader for Iso1444
         this.irq_wait(Interrupt::Txe).await?;
 
         // Wait for RX started
+        this.irq_wait_timeout(Interrupt::Rxs, Duration::from_millis(fwt_ms as _))
+            .await?;
+
         this.irq_wait_timeout(Interrupt::Rxs, Duration::from_millis(fwt_ms as _))
             .await?;
 
@@ -201,7 +216,14 @@ impl<'d, I: Interface + 'd, IrqPin: InputPin + Wait + 'd> ll::Reader for Iso1444
         }
 
         let mut rx_bytes = this.regs().fifo_status1().read()? as usize;
-        rx_bytes |= (stat.fifo_b() as usize) << 8;
+        #[cfg(feature = "st25r3916")]
+        {
+            rx_bytes |= (stat.fifo_b() as usize) << 8;
+        }
+        #[cfg(feature = "st25r3911b")]
+        {
+            rx_bytes |= (stat.fifo_lb() as usize) << 8;
+        }
 
         if let ll::Frame::Anticoll { bits } = opts {
             let full_bytes = bits / 8;

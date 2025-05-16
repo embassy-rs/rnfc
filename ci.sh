@@ -17,9 +17,10 @@ cargo build --release --manifest-path rnfc-fm175xx/Cargo.toml --features ''
 cargo build --release --manifest-path rnfc-fm175xx/Cargo.toml --features 'defmt'
 cargo build --release --manifest-path rnfc-fm175xx/Cargo.toml --features 'log'
 
-cargo build --release --manifest-path rnfc-st25r39/Cargo.toml --features ''
-cargo build --release --manifest-path rnfc-st25r39/Cargo.toml --features 'defmt'
-cargo build --release --manifest-path rnfc-st25r39/Cargo.toml --features 'log'
+cargo build --release --manifest-path rnfc-st25r39/Cargo.toml --features 'st25r3916, defmt'
+cargo build --release --manifest-path rnfc-st25r39/Cargo.toml --features 'st25r3916, log'
+cargo build --release --manifest-path rnfc-st25r39/Cargo.toml --features 'st25r3911b, defmt'
+cargo build --release --manifest-path rnfc-st25r39/Cargo.toml --features 'st25r3911b, log'
 
 cargo build --release --manifest-path rnfc-acr122u/Cargo.toml --features ''
 
