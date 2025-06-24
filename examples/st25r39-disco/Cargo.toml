@@ -15,7 +15,7 @@ default = [
 rnfc-st25r39 = { path = "../../rnfc-st25r39", features = [ "defmt" ] }
 rnfc = { path = "../../rnfc", features = [ "defmt" ] }
 
-embassy-executor = { version = "0.7", features = ["defmt", "nightly", "arch-cortex-m", "executor-thread"] }
+embassy-executor = { version = "0.7", features = ["defmt", "arch-cortex-m", "executor-thread"] }
 embassy-time = { version = "0.4", features = ["defmt", "defmt-timestamp-uptime", "tick-hz-32_768"] }
 embassy-futures = { version = "0.1.0" }
 embassy-embedded-hal = { version = "0.3.0", features = ["defmt"]}

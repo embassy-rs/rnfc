@@ -12,7 +12,7 @@ default = ["defmt"]
 rnfc = { path = "../../rnfc", features=["defmt"]}
 rnfc-traits = { path = "../../rnfc-traits", features=["defmt"]}
 rnfc-fm175xx = { path = "../../rnfc-fm175xx", features=["defmt"]}
-embassy-executor = { version = "0.7", features = ["defmt", "nightly", "arch-cortex-m", "executor-thread"] }
+embassy-executor = { version = "0.7", features = ["defmt", "arch-cortex-m", "executor-thread"] }
 embassy-time = { version = "0.4", features = ["defmt"] }
 embassy-futures = { version = "0.1.0" }
 embassy-nrf = { version = "0.3.0", features = ["defmt", "unstable-pac", "nrf52840", "time-driver-rtc1", "gpiote", "nfc-pins-as-gpio"] }

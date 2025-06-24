@@ -1,6 +1,5 @@
 #![no_std]
 #![no_main]
-#![feature(impl_trait_in_assoc_type)]
 
 // Must go FIRST so that other mods see its macros.
 mod fmt;

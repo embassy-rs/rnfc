@@ -6,7 +6,7 @@ export CARGO_TARGET_DIR=$PWD/target_ci
 export RUSTFLAGS=-Dwarnings
 export DEFMT_LOG=trace
 
-find . -name '*.rs' -not -path '*target*' | xargs rustfmt --check  --skip-children --unstable-features --edition 2021
+find . -name '*.rs' -not -path '*target*' | xargs rustfmt --check --edition 2024
 
 cargo build --release --manifest-path rnfc/Cargo.toml --features ''
 cargo build --release --manifest-path rnfc/Cargo.toml --features 'defmt'
