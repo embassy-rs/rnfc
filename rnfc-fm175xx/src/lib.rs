@@ -10,7 +10,7 @@ mod regs;
 
 use core::convert::Infallible;
 
-use embassy_time::{with_timeout, Duration, Instant, TimeoutError, Timer};
+use embassy_time::{Duration, Instant, TimeoutError, Timer, with_timeout};
 use embedded_hal::digital::{InputPin, OutputPin};
 use embedded_hal_async::digital::Wait;
 pub use interface::*;
@@ -542,17 +542,9 @@ fn binary_search(mut min: i32, mut max: i32, mut f: impl FnMut(i32) -> bool) -> 
     min -= 1;
     while min + 1 < max {
         let m = (min + max) / 2;
-        if f(m) {
-            max = m
-        } else {
-            min = m
-        }
+        if f(m) { max = m } else { min = m }
     }
-    if max == orig_max {
-        None
-    } else {
-        Some(max)
-    }
+    if max == orig_max { None } else { Some(max) }
 }
 
 pub struct Raw<'a, I, NpdPin, IrqPin>

@@ -1,6 +1,6 @@
 use core::fmt::Debug;
 
-use embassy_time::{with_timeout, Timer};
+use embassy_time::{Timer, with_timeout};
 use rnfc_traits::iso14443a_ll as ll;
 
 use crate::fmt::Bytes;

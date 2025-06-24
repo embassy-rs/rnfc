@@ -5,7 +5,7 @@ use embedded_hal_async::digital::Wait;
 use rnfc_traits::iso14443a_ll as ll;
 
 use crate::fmt::Bytes;
-use crate::{regs, Fm175xx, Interface, FIFO_SIZE};
+use crate::{FIFO_SIZE, Fm175xx, Interface, regs};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]

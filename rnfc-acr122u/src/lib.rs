@@ -2,8 +2,8 @@ use std::io::Error;
 
 use hex_literal::hex;
 use log::{trace, warn};
-use nusb::transfer::RequestBuffer;
 use nusb::Interface;
+use nusb::transfer::RequestBuffer;
 use rnfc_traits::iso_dep::Reader;
 
 pub struct Device {

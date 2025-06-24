@@ -1,6 +1,6 @@
+use rnfc_traits::iso_dep::Reader as IsoDepReader;
 use rnfc_traits::iso14443a::{Error as _, Reader as Iso14443aReader};
 use rnfc_traits::iso14443a_ll::ErrorKind;
-use rnfc_traits::iso_dep::Reader as IsoDepReader;
 
 pub const ATS_MAX_LEN: usize = 32; // TODO??
 
@@ -269,9 +269,9 @@ mod test {
     use std::vec::Vec;
 
     use hex_literal::hex;
+    use rnfc_traits::iso_dep::Reader;
     use rnfc_traits::iso14443a::Reader as Iso14443aReader;
     use rnfc_traits::iso14443a_ll::ErrorKind;
-    use rnfc_traits::iso_dep::Reader;
 
     use super::*;
 

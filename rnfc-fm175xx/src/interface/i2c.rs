@@ -1,8 +1,8 @@
 use embedded_hal::i2c::I2c;
 
 use super::Interface;
-use crate::fmt::Bytes;
 use crate::FIFO_SIZE;
+use crate::fmt::Bytes;
 
 pub struct I2cInterface<T: I2c> {
     i2c: T,
