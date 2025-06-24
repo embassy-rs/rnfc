@@ -3,6 +3,7 @@ authors = ["Dario Nieuwenhuis <dirbaio@dirbaio.net>"]
 edition = "2021"
 name = "rnfc-fm175xx"
 version = "0.1.0"
+license = "Apache-2.0 OR MIT"
 
 [features]
 defmt = ["dep:defmt", "embassy-time/defmt", "rnfc-traits/defmt"]

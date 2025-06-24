@@ -3,6 +3,7 @@ authors = ["Dario Nieuwenhuis <dirbaio@dirbaio.net>"]
 edition = "2021"
 name = "rnfc-example-st25r39-disco"
 version = "0.1.0"
+license = "Apache-2.0 OR MIT"
 
 [features]
 log = []
