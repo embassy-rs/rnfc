@@ -1,6 +1,6 @@
 [package]
 authors = ["Dario Nieuwenhuis <dirbaio@dirbaio.net>"]
-edition = "2021"
+edition = "2024"
 name = "rnfc-example-st25r39-disco"
 version = "0.1.0"
 license = "Apache-2.0 OR MIT"
@@ -17,18 +17,18 @@ rnfc = { path = "../../rnfc", features = [ "defmt" ] }
 
 embassy-executor = { version = "0.7", features = ["defmt", "arch-cortex-m", "executor-thread"] }
 embassy-time = { version = "0.4", features = ["defmt", "defmt-timestamp-uptime", "tick-hz-32_768"] }
-embassy-futures = { version = "0.1.0" }
+embassy-futures = { version = "0.1.1" }
 embassy-embedded-hal = { version = "0.3.0", features = ["defmt"]}
 embassy-sync = { version = "0.6.0" }
 embassy-stm32 = { version = "0.2.0", features = ["defmt", "unstable-pac", "stm32l476vg", "memory-x", "time-driver-tim2", "exti"] }
 
-defmt = { version = "0.3.0", optional = true }
-defmt-rtt = "0.4.1"
+defmt = { version = "1", optional = true }
+defmt-rtt = { version = "1" }
 
-cortex-m = { version= "0.7.6", features = ["critical-section-single-core"] }
-cortex-m-rt = "0.7.0"
-panic-probe = { version = "0.3.0", features= ["print-defmt"] }
-futures = { version = "0.3.8", default-features = false, features = ["async-await"] }
+cortex-m = { version= "0.7.7", features = ["critical-section-single-core"] }
+cortex-m-rt = "0.7.5"
+panic-probe = { version = "1.0.0", features= ["print-defmt"] }
+futures = { version = "0.3.31", default-features = false, features = ["async-await"] }
 heapless = { version = "0.8", features=["defmt-03"] }
 
 

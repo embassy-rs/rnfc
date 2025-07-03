@@ -1,7 +1,7 @@
 [package]
 name = "rnfc"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 license = "Apache-2.0 OR MIT"
 
 [features]
@@ -9,12 +9,12 @@ defmt = ["dep:defmt", "rnfc-traits/defmt", "heapless/defmt-03"]
 
 [dependencies]
 rnfc-traits = { version = "0.1.0", path = "../rnfc-traits" }
-defmt = { version = "0.3", optional = true }
-log = { version = "0.4.14", optional = true }
+defmt = { version = "1", optional = true }
+log = { version = "0.4.27", optional = true }
 heapless = "0.8"
 
 [dev-dependencies]
-hex-literal = "0.4.1"
-tokio = { version = "1.24.2", default-features = false, features = ["macros", "rt"] }
+hex-literal = "1.0.0"
+tokio = { version = "1.45.1", default-features = false, features = ["macros", "rt"] }
 env_logger = "0.11"
-test-log = { version = "0.2.11", features = ["log"] }
+test-log = { version = "0.2.17", features = ["log"] }
