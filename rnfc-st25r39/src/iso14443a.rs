@@ -29,6 +29,15 @@ impl<T: Debug> ll::Error for Error<T> {
     fn kind(&self) -> ll::ErrorKind {
         match self {
             Self::Timeout => ll::ErrorKind::Timeout,
+
+            Self::Framing => ll::ErrorKind::Corruption,
+            Self::FramingLastByteMissingParity => ll::ErrorKind::Corruption,
+            Self::Crc => ll::ErrorKind::Corruption,
+            Self::Collision => ll::ErrorKind::Corruption,
+            Self::Parity => ll::ErrorKind::Corruption,
+            Self::ResponseTooShort => ll::ErrorKind::Corruption,
+            Self::ResponseTooLong => ll::ErrorKind::Corruption,
+
             _ => ll::ErrorKind::Other,
         }
     }
