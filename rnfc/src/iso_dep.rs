@@ -58,11 +58,22 @@ where
         // RATS
         let req = [0xe0, 0x80];
         let mut res = [0; ATS_MAX_LEN];
-        let res_len = match card.transceive(&req, &mut res, RATS_TIMEOUT_1FC).await {
-            Ok(len) => len,
-            Err(e) => {
-                warn!("Trx RATS failed: {:?}", e);
-                return Err(Error::Iso14443a(e));
+        let mut retries = 0;
+        let res_len = loop {
+            match card.transceive(&req, &mut res, RATS_TIMEOUT_1FC).await {
+                Ok(len) => break len,
+                Err(e) => {
+                    warn!("isodep: Trx RATS failed: {:?}", e);
+                    match e.kind() {
+                        ErrorKind::Timeout | ErrorKind::Corruption => {
+                            retries += 1;
+                            if retries >= 4 {
+                                return Err(Error::Communication);
+                            }
+                        }
+                        _ => return Err(Error::Iso14443a(e)),
+                    }
+                }
             }
         };
         let ats = &res[..res_len];
