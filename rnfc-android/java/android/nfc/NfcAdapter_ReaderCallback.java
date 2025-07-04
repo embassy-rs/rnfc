@@ -2,7 +2,7 @@
 package com.github.embassy_rs.rnfc.proxy.android.nfc;
 
 @SuppressWarnings("rawtypes")
-class NfcAdapter_ReaderCallback implements android.nfc.NfcAdapter$ReaderCallback {
+class NfcAdapter_ReaderCallback implements android.nfc.NfcAdapter.ReaderCallback {
     long ptr;
 
     private NfcAdapter_ReaderCallback(long ptr) {
