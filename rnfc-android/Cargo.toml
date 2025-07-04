@@ -6,6 +6,6 @@ license = "Apache-2.0 OR MIT"
 
 [dependencies]
 async-channel = "2.3.1"
-java-spaghetti = { git = "https://github.com/Dirbaio/java-spaghetti", rev = "4789417239aade099d1c6af361929c0a5fcac5fa" }
+java-spaghetti = { git = "https://github.com/Dirbaio/java-spaghetti", rev = "c7668f3cd5f07e2120d7ed008d193c1a4f4295ad" }
 log = "0.4.27"
 rnfc-traits = { path = "../rnfc-traits" }

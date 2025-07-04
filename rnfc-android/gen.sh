@@ -7,5 +7,5 @@ if [[ -z "$ANDROID_HOME" ]] then
     exit 1
 fi
 
-java-spaghetti-gen generate --verbose
+java-spaghetti-gen generate
 rustfmt src/bindings.rs --edition 2024

@@ -7,15 +7,15 @@ use std::mem::ManuallyDrop;
 use std::sync::Arc;
 
 use async_channel::{Receiver, Sender};
-use bindings::android::app::Activity;
-use bindings::android::nfc::tech::{IsoDep, NfcA};
-use bindings::android::nfc::{NfcAdapter, NfcAdapter_ReaderCallback, NfcAdapter_ReaderCallbackProxy, Tag as NfcTag};
 use java_spaghetti::sys::{JNIEnv, jobject};
 use java_spaghetti::{ByteArray, Env, Global, Local, Null, PrimitiveArray, Ref, VM};
 use log::{info, warn};
 use rnfc_traits::iso_dep::Reader as IsoDepReader;
 use rnfc_traits::iso14443a::Reader as Iso14443aReader;
 
+use crate::bindings::android::app::Activity;
+use crate::bindings::android::nfc::tech::{IsoDep, NfcA};
+use crate::bindings::android::nfc::{NfcAdapter, NfcAdapter_ReaderCallback, NfcAdapter_ReaderCallbackProxy, Tag as NfcTag};
 pub use crate::errors::*;
 
 /// Utility to hold reader mode enabled.
