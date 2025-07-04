@@ -69,7 +69,11 @@ impl<'a> Reader<'a> {
         adapter.enableReaderMode(
             &activity,
             callback,
-            NfcAdapter::FLAG_READER_NFC_A | NfcAdapter::FLAG_READER_SKIP_NDEF_CHECK,
+            NfcAdapter::FLAG_READER_NFC_A
+                | NfcAdapter::FLAG_READER_NFC_B
+                | NfcAdapter::FLAG_READER_NFC_F
+                | NfcAdapter::FLAG_READER_NFC_V
+                | NfcAdapter::FLAG_READER_SKIP_NDEF_CHECK,
             Null,
         )?;
 
@@ -97,23 +101,65 @@ impl<'a> Reader<'a> {
             None => Vec::new(),
         };
 
+        let mut techs = TagTechs::default();
+        for t in tag.getTechList().unwrap().unwrap().iter().flatten() {
+            match t.to_string_lossy().as_str() {
+                "android.nfc.tech.NfcA" => techs.nfc_a = true,
+                "android.nfc.tech.NfcB" => techs.nfc_b = true,
+                "android.nfc.tech.NfcF" => techs.nfc_f = true,
+                "android.nfc.tech.IsoDep" => techs.iso_dep = true,
+                t => warn!("ignoring unknown tech '{t}'"),
+            }
+        }
+
         Ok(Tag {
             tag,
             uid,
             holder: self.holder.clone(),
+            techs,
         })
     }
+}
+
+#[derive(Clone, Copy, Debug, Default)]
+struct TagTechs {
+    nfc_a: bool,
+    nfc_b: bool,
+    nfc_f: bool,
+    nfc_v: bool,
+    iso_dep: bool,
 }
 
 pub struct Tag<'a> {
     tag: Local<'a, NfcTag>,
     uid: Vec<u8>,
     holder: Arc<ReaderModeHolder>,
+    techs: TagTechs,
 }
 
 impl<'a> Tag<'a> {
     pub fn uid(&self) -> Vec<u8> {
         self.uid.clone()
+    }
+
+    pub fn supports_iso14443_a(&self) -> bool {
+        self.techs.nfc_a
+    }
+
+    pub fn supports_iso14443_b(&self) -> bool {
+        self.techs.nfc_b
+    }
+
+    pub fn supports_iso15693(&self) -> bool {
+        self.techs.nfc_v
+    }
+
+    pub fn supports_felica(&self) -> bool {
+        self.techs.nfc_f
+    }
+
+    pub fn supports_iso_dep(&self) -> bool {
+        self.techs.iso_dep
     }
 
     pub fn as_iso_dep(&mut self) -> Result<IsoDepTag<'_>, AsTechError> {
@@ -151,6 +197,7 @@ impl<'a> Tag<'a> {
             tag: self.tag.as_global(),
             uid: self.uid,
             holder: self.holder,
+            techs: self.techs,
         }
     }
 }
@@ -159,6 +206,7 @@ pub struct GlobalTag {
     tag: Global<NfcTag>,
     uid: Vec<u8>,
     holder: Arc<ReaderModeHolder>,
+    techs: TagTechs,
 }
 
 impl GlobalTag {
@@ -173,6 +221,7 @@ impl GlobalTag {
             tag: self.tag.as_local(env),
             uid: self.uid.clone(),
             holder: self.holder.clone(),
+            techs: self.techs,
         }
     }
 }
