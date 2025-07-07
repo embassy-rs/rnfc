@@ -437,9 +437,6 @@ impl<I: Interface, IrqPin: InputPin + Wait> St25r39<I, IrqPin> {
         self.regs().op_control().modify(|w| {
             w.set_en_fd(regs::OpControlEnFd::AUTO_EFD);
         })?;
-        self.regs().tx_driver().write(|w| {
-            w.set_d_res(3);
-        })?;
         Ok(())
     }
 
@@ -566,6 +563,7 @@ impl<I: Interface, IrqPin: InputPin + Wait> St25r39<I, IrqPin> {
         })?;
         self.regs().tx_driver().write(|w| {
             w.set_am_mod(regs::TxDriverAmMod::_12PERCENT);
+            w.set_d_res(0); // max power
         })?;
         self.regs().aux_mod().write(|w| {
             w.set_lm_dri(true); // Enable internal Load Modulation
@@ -583,14 +581,12 @@ impl<I: Interface, IrqPin: InputPin + Wait> St25r39<I, IrqPin> {
             w.set_dis_corr(false); // Enable correlator reception
             w.set_nfc_n(0); // todo this changes
         })?;
-        /*
         self.regs().rx_conf1().write_value(0x08.into())?;
         self.regs().rx_conf2().write_value(0x2D.into())?;
         self.regs().rx_conf3().write_value(0x00.into())?;
         self.regs().rx_conf4().write_value(0x00.into())?;
         self.regs().corr_conf1().write_value(0x51.into())?;
         self.regs().corr_conf2().write_value(0x00.into())?;
-         */
 
         self.regs().bit_rate().write(|w| {
             w.set_rxrate(regs::BitRateE::_106);
