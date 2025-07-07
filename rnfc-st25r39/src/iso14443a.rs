@@ -100,41 +100,53 @@ impl<'d, I: Interface, IrqPin: InputPin + Wait> Drop for Iso14443a<'d, I, IrqPin
     }
 }
 
+// NFC-A minimum FDT(listen) = ((n * 128 + (84)) / fc) with n_min = 9      Digital 1.1  6.10.1
+//                            = (1236)/fc
+// Relax with 3etu: (3*128)/fc as with multiple NFC-A cards, response may take longer (JCOP cards)
+//                            = (1236 + 384)/fc = 1620 / fc
+const NFCA_FDTMIN: u32 = 1620;
+
+// FWT adjustment:
+//   64 : NRT jitter between TXE and NRT start
+const FWT_ADJUSTMENT: u32 = 64;
+
+// FWT ISO14443A adjustment:
+//  512  : 4bit length
+//   64  : Half a bit duration due to ST25R3916 Coherent receiver (1/fc)
+const FWT_A_ADJUSTMENT: u32 = 512 + 64;
+
 impl<'d, I: Interface + 'd, IrqPin: InputPin + Wait + 'd> ll::Reader for Iso14443a<'d, I, IrqPin> {
     type Error = Error<I::Error>;
 
     async fn transceive(&mut self, tx: &[u8], rx: &mut [u8], opts: ll::Frame) -> Result<usize, Self::Error> {
         let this = &mut *self.inner;
 
-        Timer::after(Duration::from_millis(1)).await;
         debug!("TX: {:?} {:02x}", opts, Bytes(tx));
 
         this.cmd(Command::Stop)?;
         this.cmd(Command::ResetRxgain)?;
 
-        let mut fwt_ms = 5;
         let is_anticoll = matches!(opts, ll::Frame::Anticoll { .. });
 
-        let (raw, cmd) = match opts {
-            ll::Frame::ReqA => (true, Command::TransmitReqa),
-            ll::Frame::WupA => (true, Command::TransmitWupa),
+        let (raw, cmd, timeout_1fc) = match opts {
+            ll::Frame::ReqA => (true, Command::TransmitReqa, NFCA_FDTMIN),
+            ll::Frame::WupA => (true, Command::TransmitWupa, NFCA_FDTMIN),
             ll::Frame::Anticoll { bits } => {
                 this.regs().num_tx_bytes2().write_value((bits as u8).into())?;
                 this.regs().num_tx_bytes1().write_value((bits >> 8) as u8)?;
                 this.iface.write_fifo(&tx[..(bits + 7) / 8]).map_err(Error::Interface)?;
-                (true, Command::TransmitWithoutCrc)
+                (true, Command::TransmitWithoutCrc, NFCA_FDTMIN)
             }
             ll::Frame::Standard { timeout_1fc, .. } => {
-                fwt_ms = timeout_1fc / 13560 + 1;
                 let bits = tx.len() * 8;
                 this.regs().num_tx_bytes2().write_value((bits as u8).into())?;
                 this.regs().num_tx_bytes1().write_value((bits >> 8) as u8)?;
                 this.iface.write_fifo(tx).map_err(Error::Interface)?;
-                (false, Command::TransmitWithCrc)
+                (false, Command::TransmitWithCrc, timeout_1fc)
             }
         };
         this.regs().corr_conf1().write(|w| {
-            w.0 = 0x13;
+            w.0 = 0x11;
             w.set_corr_s6(!is_anticoll);
         })?;
 
@@ -151,6 +163,7 @@ impl<'d, I: Interface + 'd, IrqPin: InputPin + Wait + 'd> ll::Reader for Iso1444
             w.set_agc6_3(true); // 0: AGC ratio 3
             w.set_sqm_dyn(true); // Automatic squelch activation after end of TX
         })?;
+        this.set_nrt(timeout_1fc + FWT_ADJUSTMENT + FWT_A_ADJUSTMENT)?;
 
         this.irqs = 0; // stop already clears all irqs
         this.cmd(cmd)?;
@@ -158,24 +171,28 @@ impl<'d, I: Interface + 'd, IrqPin: InputPin + Wait + 'd> ll::Reader for Iso1444
         // Wait for tx ended
         this.irq_wait(Interrupt::Txe).await?;
 
-        // Wait for RX started
-        this.irq_wait_timeout(Interrupt::Rxs, Duration::from_millis(fwt_ms as _))
-            .await?;
-
         // Wait for rx ended or error
         // The timeout should never hit, it's just for safety.
         let res = with_timeout(Duration::from_millis(500), async {
             loop {
+                if this.irq(Interrupt::Nre) {
+                    debug!("RX: Timeout (No-response timer expired)");
+                    return Err(Error::Timeout);
+                }
                 if this.irq(Interrupt::Err1) {
+                    debug!("RX: Framing");
                     return Err(Error::Framing);
                 }
                 if this.irq(Interrupt::Par) {
+                    debug!("RX: Parity");
                     return Err(Error::Parity);
                 }
                 if this.irq(Interrupt::Crc) {
+                    debug!("RX: Crc");
                     return Err(Error::Crc);
                 }
                 if !is_anticoll && this.irq(Interrupt::Col) {
+                    debug!("RX: Collision");
                     return Err(Error::Collision);
                 }
 
@@ -192,20 +209,28 @@ impl<'d, I: Interface + 'd, IrqPin: InputPin + Wait + 'd> ll::Reader for Iso1444
 
         match res {
             Ok(Ok(())) => {}
-            Ok(Err(e)) => return Err(e),
-            Err(_) => return Err(Error::Timeout),
+            Ok(Err(e)) => {
+                return Err(e);
+            }
+            Err(_) => {
+                debug!("RX: unexpected safety timeout triggered");
+                return Err(Error::Timeout);
+            }
         }
 
         // If we're here, RX ended without error.
 
         let stat = this.regs().fifo_status2().read()?;
         if stat.fifo_ovr() {
+            debug!("RX: FifoOverflow");
             return Err(Error::FifoOverflow);
         }
         if stat.fifo_unf() {
+            debug!("RX: FifoUnderflow");
             return Err(Error::FifoUnderflow);
         }
         if stat.np_lb() {
+            debug!("RX: FramingLastByteMissingParity");
             return Err(Error::FramingLastByteMissingParity);
         }
 
@@ -236,12 +261,14 @@ impl<'d, I: Interface + 'd, IrqPin: InputPin + Wait + 'd> ll::Reader for Iso1444
             // Remove received CRC
             if !raw {
                 if rx_bytes < 2 {
+                    debug!("RX: ResponseTooShort");
                     return Err(Error::ResponseTooShort);
                 }
                 rx_bytes -= 2;
             }
 
             if rx.len() < rx_bytes {
+                debug!("RX: ResponseTooLong");
                 return Err(Error::ResponseTooLong);
             }
 

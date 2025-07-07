@@ -682,6 +682,34 @@ impl<I: Interface, IrqPin: InputPin + Wait> St25r39<I, IrqPin> {
         Ok(())
     }
 
+    fn set_nrt(&mut self, nrt_1fc: u32) -> Result<(), Error<I::Error>> {
+        const NRT_MAX: u32 = 0xFFFF;
+
+        // try 64/fc units
+        let nrt_64fc = nrt_1fc.div_ceil(64);
+        if nrt_64fc <= NRT_MAX {
+            self.regs().timer_emv_control().write(|w| {
+                w.set_nrt_step(regs::TimerEmvControlNrtStep::_64FC);
+            })?;
+            self.regs().no_response_timer1().write_value((nrt_64fc >> 8) as u8)?;
+            self.regs().no_response_timer2().write_value(nrt_64fc as u8)?;
+            return Ok(());
+        }
+
+        // try 4096/fc units
+        let nrt_4096fc = nrt_1fc.div_ceil(4096);
+        if nrt_64fc <= NRT_MAX {
+            self.regs().timer_emv_control().write(|w| {
+                w.set_nrt_step(regs::TimerEmvControlNrtStep::_4096_FC);
+            })?;
+            self.regs().no_response_timer1().write_value((nrt_4096fc >> 8) as u8)?;
+            self.regs().no_response_timer2().write_value(nrt_4096fc as u8)?;
+            return Ok(());
+        }
+
+        panic!("NRT out of range")
+    }
+
     pub fn raw(&mut self) -> Raw<'_, I, IrqPin> {
         Raw { inner: self }
     }
