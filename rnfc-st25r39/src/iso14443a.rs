@@ -206,6 +206,7 @@ impl<'d, I: Interface + 'd, IrqPin: InputPin + Wait + 'd> ll::Reader for Iso1444
             Ok(())
         })
         .await;
+        this.cmd(Command::StopNrt)?;
 
         match res {
             Ok(Ok(())) => {}
