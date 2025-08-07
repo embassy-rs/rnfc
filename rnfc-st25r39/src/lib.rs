@@ -696,7 +696,7 @@ impl<I: Interface, IrqPin: InputPin + Wait> St25r39<I, IrqPin> {
 
         // try 4096/fc units
         let nrt_4096fc = nrt_1fc.div_ceil(4096);
-        if nrt_64fc <= NRT_MAX {
+        if nrt_4096fc <= NRT_MAX {
             self.regs().timer_emv_control().write(|w| {
                 w.set_nrt_step(regs::TimerEmvControlNrtStep::_4096_FC);
             })?;
