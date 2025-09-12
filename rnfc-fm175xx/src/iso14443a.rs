@@ -43,7 +43,7 @@ where
     NpdPin: OutputPin,
     IrqPin: InputPin + Wait,
 {
-    pub async fn start_iso14443a(&mut self) -> Result<Iso14443a<I, NpdPin, IrqPin>, Error> {
+    pub async fn start_iso14443a(&mut self) -> Result<Iso14443a<'_, I, NpdPin, IrqPin>, Error> {
         self.on().await;
 
         self.regs().txmode().write(|w| {

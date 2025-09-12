@@ -276,7 +276,7 @@ impl<I: Interface, IrqPin: InputPin + Wait> St25r39<I, IrqPin> {
         Ok(this)
     }
 
-    fn regs(&mut self) -> Regs<I> {
+    fn regs(&mut self) -> Regs<'_, I> {
         Regs::new(&mut self.iface)
     }
 

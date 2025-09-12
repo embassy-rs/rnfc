@@ -14,6 +14,7 @@ use rnfc::iso_dep::IsoDepA;
 use rnfc::iso14443a::Poller;
 use rnfc_fm175xx::{Fm175xx, I2cInterface, WakeupConfig};
 use rnfc_traits::iso_dep::Reader;
+use static_cell::ConstStaticCell;
 use {defmt_rtt as _, panic_probe as _};
 
 bind_interrupts!(struct Irqs {
@@ -37,10 +38,10 @@ async fn main(_spawner: Spawner) {
 
     {
         // Try to unstick the i2c bus if it's stuck.
-        let mut scl = Flex::new(&mut scl);
+        let mut scl = Flex::new(scl.reborrow());
         scl.set_high();
         scl.set_as_input_output(Pull::None, OutputDrive::HighDrive0Disconnect1);
-        let mut sda = Flex::new(&mut sda);
+        let mut sda = Flex::new(sda.reborrow());
         sda.set_high();
         sda.set_as_input_output(Pull::None, OutputDrive::HighDrive0Disconnect1);
 
@@ -90,7 +91,8 @@ async fn main(_spawner: Spawner) {
     config.scl_high_drive = true;
     config.sda_high_drive = true;
 
-    let twim = Twim::new(p.TWISPI0, Irqs, sda, scl, config);
+    static RAM_BUFFER: ConstStaticCell<[u8; 16]> = ConstStaticCell::new([0; 16]);
+    let twim = Twim::new(p.TWISPI0, Irqs, sda, scl, config, RAM_BUFFER.take());
 
     let iface = I2cInterface::new(twim, 0x28);
     let mut fm = Fm175xx::new(iface, npd, irq).await;

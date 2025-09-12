@@ -15,12 +15,12 @@ default = [
 rnfc-st25r39 = { path = "../../rnfc-st25r39", features = [ "defmt" ] }
 rnfc = { path = "../../rnfc", features = [ "defmt" ] }
 
-embassy-executor = { version = "0.7", features = ["defmt", "arch-cortex-m", "executor-thread"] }
-embassy-time = { version = "0.4", features = ["defmt", "defmt-timestamp-uptime", "tick-hz-32_768"] }
-embassy-futures = { version = "0.1.1" }
-embassy-embedded-hal = { version = "0.3.0", features = ["defmt"]}
-embassy-sync = { version = "0.6.0" }
-embassy-stm32 = { version = "0.2.0", features = ["defmt", "unstable-pac", "stm32l476vg", "memory-x", "time-driver-tim2", "exti"] }
+embassy-executor = { version = "0.9", features = ["defmt", "arch-cortex-m", "executor-thread"] }
+embassy-time = { version = "0.5", features = ["defmt", "defmt-timestamp-uptime", "tick-hz-32_768"] }
+embassy-futures = { version = "0.1" }
+embassy-embedded-hal = { version = "0.5", features = ["defmt"]}
+embassy-sync = { version = "0.7" }
+embassy-stm32 = { version = "0.4", features = ["defmt", "unstable-pac", "stm32l476vg", "memory-x", "time-driver-tim2", "exti"] }
 
 defmt = { version = "1", optional = true }
 defmt-rtt = { version = "1" }

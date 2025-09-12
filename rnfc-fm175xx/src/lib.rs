@@ -109,7 +109,7 @@ where
         }
     }
 
-    fn regs(&mut self) -> Regs<I> {
+    fn regs(&mut self) -> Regs<'_, I> {
         Regs {
             iface: &mut self.iface,
             addr: 0,

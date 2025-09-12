@@ -11,8 +11,8 @@ defmt = [ "dep:defmt", "rnfc-traits/defmt", "heapless/defmt-03" ]
 defmt = { version = "1", optional = true }
 log = { version = "0.4.27", optional = true }
 
-embassy-time = { version = "0.4" }
-embassy-futures = { version = "0.1.1" }
+embassy-time = { version = "0.5" }
+embassy-futures = { version = "0.1" }
 rnfc-traits = { version = "0.1.0", path = "../rnfc-traits" }
 heapless = "0.8" 
 embedded-hal = { version = "1" }
