@@ -29,7 +29,7 @@ cortex-m = { version= "0.7.7", features = ["critical-section-single-core"] }
 cortex-m-rt = "0.7.5"
 panic-probe = { version = "1.0.0", features= ["print-defmt"] }
 futures = { version = "0.3.31", default-features = false, features = ["async-await"] }
-heapless = { version = "0.8", features=["defmt-03"] }
+heapless = { version = "0.9", features=["defmt"] }
 
 
 [profile.dev]

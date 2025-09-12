@@ -5,13 +5,13 @@ edition = "2024"
 license = "Apache-2.0 OR MIT"
 
 [features]
-defmt = ["dep:defmt", "rnfc-traits/defmt", "heapless/defmt-03"]
+defmt = ["dep:defmt", "rnfc-traits/defmt", "heapless/defmt"]
 
 [dependencies]
 rnfc-traits = { version = "0.1.0", path = "../rnfc-traits" }
 defmt = { version = "1", optional = true }
 log = { version = "0.4.27", optional = true }
-heapless = "0.8"
+heapless = "0.9"
 
 [dev-dependencies]
 hex-literal = "1.0.0"
