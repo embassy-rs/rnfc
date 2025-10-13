@@ -91,8 +91,8 @@ async fn main(_spawner: Spawner) {
     config.scl_high_drive = true;
     config.sda_high_drive = true;
 
-    static RAM_BUFFER: ConstStaticCell<[u8; 16]> = ConstStaticCell::new([0; 16]);
-    let twim = Twim::new(p.TWISPI0, Irqs, sda, scl, config, RAM_BUFFER.take());
+    let mut buf = [0u8; 256];
+    let twim = Twim::new(p.TWISPI0, Irqs, sda, scl, config, &mut buf);
 
     let iface = I2cInterface::new(twim, 0x28);
     let mut fm = Fm175xx::new(iface, npd, irq).await;
