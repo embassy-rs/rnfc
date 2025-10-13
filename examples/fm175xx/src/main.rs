@@ -1,9 +1,7 @@
 #![no_std]
 #![no_main]
 
-// Must go FIRST so that other mods see its macros.
-mod fmt;
-
+use defmt::{info, warn};
 use embassy_executor::Spawner;
 use embassy_nrf::config::LfclkSource;
 use embassy_nrf::gpio::{Flex, Input, Level, Output, OutputDrive, Pull};
@@ -14,7 +12,6 @@ use rnfc::iso_dep::IsoDepA;
 use rnfc::iso14443a::Poller;
 use rnfc_fm175xx::{Fm175xx, I2cInterface, WakeupConfig};
 use rnfc_traits::iso_dep::Reader;
-use static_cell::ConstStaticCell;
 use {defmt_rtt as _, panic_probe as _};
 
 bind_interrupts!(struct Irqs {

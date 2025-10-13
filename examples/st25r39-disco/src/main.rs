@@ -1,11 +1,9 @@
 #![no_std]
 #![no_main]
 
-// Must go FIRST
-mod fmt;
-
 use core::cell::RefCell;
 
+use defmt::{info, warn};
 use embassy_embedded_hal::shared_bus::blocking::spi::SpiDevice;
 use embassy_executor::Spawner;
 use embassy_stm32::exti::ExtiInput;

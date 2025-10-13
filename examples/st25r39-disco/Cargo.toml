@@ -5,12 +5,6 @@ name = "rnfc-example-st25r39-disco"
 version = "0.1.0"
 license = "Apache-2.0 OR MIT"
 
-[features]
-log = []
-default = [
- "defmt",
-]
-
 [dependencies]
 rnfc-st25r39 = { path = "../../rnfc-st25r39", features = [ "defmt" ] }
 rnfc = { path = "../../rnfc", features = [ "defmt" ] }
@@ -22,7 +16,7 @@ embassy-embedded-hal = { version = "0.5", features = ["defmt"]}
 embassy-sync = { version = "0.7" }
 embassy-stm32 = { version = "0.4", features = ["defmt", "unstable-pac", "stm32l476vg", "memory-x", "time-driver-tim2", "exti"] }
 
-defmt = { version = "1", optional = true }
+defmt = { version = "1" }
 defmt-rtt = { version = "1" }
 panic-probe = { version = "1", features= ["print-defmt"] }
 
