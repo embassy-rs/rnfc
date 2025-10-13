@@ -28,6 +28,46 @@ pub enum Error<T> {
     Timeout,
 }
 
+#[derive(Debug, Clone, Copy)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum DriverResistance {
+    /// 1 Ohm
+    Ohm1 = 0,
+    /// 2 Ohm
+    Ohm2 = 1,
+    /// 4.1 Ohm
+    Ohm4_1 = 2,
+    /// 8.3 Ohm
+    Ohm8_3 = 3,
+    /// 17.1 Ohm
+    Ohm17_1 = 5,
+    /// High impedance (will make it not work)
+    HiZ = 15,
+}
+
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub struct Config {
+    /// Driver output resistance. Higher resistance causes less power consumption
+    /// but less read range as well.
+    pub driver_resistance: DriverResistance,
+}
+
+impl Config {
+    pub const fn new() -> Self {
+        Self {
+            driver_resistance: DriverResistance::Ohm1,
+        }
+    }
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Direct commands
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
@@ -262,6 +302,7 @@ pub struct St25r39<I: Interface, IrqPin: InputPin + Wait> {
     irq: IrqPin,
     irqs: u32,
     mode: Mode,
+    config: Config,
 }
 
 impl<I: Interface, IrqPin: InputPin + Wait> St25r39<I, IrqPin> {
@@ -271,9 +312,14 @@ impl<I: Interface, IrqPin: InputPin + Wait> St25r39<I, IrqPin> {
             irq,
             irqs: 0,
             mode: Mode::On,
+            config: Config::new(),
         };
         this.init().await?;
         Ok(this)
+    }
+
+    pub fn set_config(&mut self, config: Config) {
+        self.config = config;
     }
 
     fn regs(&mut self) -> Regs<'_, I> {
@@ -561,9 +607,10 @@ impl<I: Interface, IrqPin: InputPin + Wait> St25r39<I, IrqPin> {
             w.set_om(regs::ModeOm::INI_ISO14443A);
             w.set_tr_am(false); // use OOK
         })?;
+        let res = self.config.driver_resistance;
         self.regs().tx_driver().write(|w| {
             w.set_am_mod(regs::TxDriverAmMod::_12PERCENT);
-            w.set_d_res(0); // max power
+            w.set_d_res(res as u8);
         })?;
         self.regs().aux_mod().write(|w| {
             w.set_lm_dri(true); // Enable internal Load Modulation

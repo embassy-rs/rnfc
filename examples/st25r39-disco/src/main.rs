@@ -16,7 +16,7 @@ use embassy_time::{Duration, Timer};
 use rnfc::iso_dep::IsoDepA;
 use rnfc::iso14443a::Poller;
 use rnfc::traits::iso_dep::Reader;
-use rnfc_st25r39::{SpiInterface, St25r39, WakeupConfig, WakeupMethodConfig, WakeupPeriod, WakeupReference};
+use rnfc_st25r39::{DriverResistance, SpiInterface, St25r39, WakeupConfig, WakeupMethodConfig, WakeupPeriod, WakeupReference};
 use {defmt_rtt as _, panic_probe as _};
 
 #[embassy_executor::main]
@@ -53,7 +53,11 @@ async fn main(_spawner: Spawner) {
     let irq = ExtiInput::new(p.PE15, p.EXTI15, Pull::None);
     let mut st = St25r39::new(iface, irq).await.unwrap();
 
-    let config = WakeupConfig {
+    let mut config = rnfc_st25r39::Config::new();
+    config.driver_resistance = DriverResistance::Ohm1; // max power
+    st.set_config(config);
+
+    let wup_config = WakeupConfig {
         period: WakeupPeriod::Ms500,
         capacitive: None,
         inductive_amplitude: None,
@@ -63,7 +67,7 @@ async fn main(_spawner: Spawner) {
         }),
     };
 
-    match st.wait_for_card(config).await {
+    match st.wait_for_card(wup_config).await {
         Ok(()) => {}
         Err(e) => warn!("wait for card failed: {:?}", e),
     }
