@@ -45,6 +45,15 @@ pub enum DriverResistance {
     HiZ = 15,
 }
 
+#[derive(Debug, Clone, Copy)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum McuClk {
+    Mhz3_39 = 0,
+    Mhz6_78 = 1,
+    Mhz13_56 = 2,
+    Disabled = 3,
+}
+
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
@@ -52,12 +61,22 @@ pub struct Config {
     /// Driver output resistance. Higher resistance causes less power consumption
     /// but less read range as well.
     pub driver_resistance: DriverResistance,
+
+    /// Selection of clock frequency on MCU_CLK output in case Xtal oscillator is running.
+    /// With "Disabled" MCU_CLK output is permanently low.
+    pub mcu_clk: McuClk,
+
+    /// By default the 32 kHz LF clock is present on MCU_CLK output when
+    /// Xtal oscillator is not running and the MCU_CLK output is not disabled.
+    pub mcu_clk_lf: bool,
 }
 
 impl Config {
     pub const fn new() -> Self {
         Self {
             driver_resistance: DriverResistance::Ohm1,
+            mcu_clk: McuClk::Disabled,
+            mcu_clk_lf: false,
         }
     }
 }
@@ -372,10 +391,16 @@ impl<I: Interface, IrqPin: InputPin + Wait> St25r39<I, IrqPin> {
             w.set_sup_3v(sup3v);
         })?;
 
-        // Disable MCU_CLK
+        // Configure MCU_CLK
+        let config = self.config;
         self.regs().io_conf1().write(|w| {
-            w.set_out_cl(regs::IoConf1OutCl::DISABLED);
-            w.set_lf_clk_off(true);
+            w.set_out_cl(match config.mcu_clk {
+                McuClk::Disabled => regs::IoConf1OutCl::DISABLED,
+                McuClk::Mhz13_56 => regs::IoConf1OutCl::_13_86_MHZ,
+                McuClk::Mhz6_78 => regs::IoConf1OutCl::_6_78_MHZ,
+                McuClk::Mhz3_39 => regs::IoConf1OutCl::_3_39_MHZ,
+            });
+            w.set_lf_clk_off(!config.mcu_clk_lf);
         })?;
 
         // Enable minimum non-overlap
