@@ -337,8 +337,25 @@ impl<I: Interface, IrqPin: InputPin + Wait> St25r39<I, IrqPin> {
         Ok(this)
     }
 
-    pub fn set_config(&mut self, config: Config) {
+    pub fn set_config(&mut self, config: Config) -> Result<(), Error<I::Error>> {
         self.config = config;
+        self.apply_config()
+    }
+
+    pub fn apply_config(&mut self) -> Result<(), Error<I::Error>> {
+        // Configure MCU_CLK
+        let config = self.config;
+        self.regs().io_conf1().write(|w| {
+            w.set_out_cl(match config.mcu_clk {
+                McuClk::Disabled => regs::IoConf1OutCl::DISABLED,
+                McuClk::Mhz13_56 => regs::IoConf1OutCl::_13_86_MHZ,
+                McuClk::Mhz6_78 => regs::IoConf1OutCl::_6_78_MHZ,
+                McuClk::Mhz3_39 => regs::IoConf1OutCl::_3_39_MHZ,
+            });
+            w.set_lf_clk_off(!config.mcu_clk_lf);
+        })?;
+
+        Ok(())
     }
 
     fn regs(&mut self) -> Regs<'_, I> {
@@ -391,17 +408,7 @@ impl<I: Interface, IrqPin: InputPin + Wait> St25r39<I, IrqPin> {
             w.set_sup_3v(sup3v);
         })?;
 
-        // Configure MCU_CLK
-        let config = self.config;
-        self.regs().io_conf1().write(|w| {
-            w.set_out_cl(match config.mcu_clk {
-                McuClk::Disabled => regs::IoConf1OutCl::DISABLED,
-                McuClk::Mhz13_56 => regs::IoConf1OutCl::_13_86_MHZ,
-                McuClk::Mhz6_78 => regs::IoConf1OutCl::_6_78_MHZ,
-                McuClk::Mhz3_39 => regs::IoConf1OutCl::_3_39_MHZ,
-            });
-            w.set_lf_clk_off(!config.mcu_clk_lf);
-        })?;
+        self.apply_config()?;
 
         // Enable minimum non-overlap
         //self.regs().res_am_mod().write(|w| w.set_fa3_f(true))?;

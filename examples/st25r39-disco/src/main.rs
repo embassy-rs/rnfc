@@ -55,7 +55,7 @@ async fn main(_spawner: Spawner) {
 
     let mut config = rnfc_st25r39::Config::new();
     config.driver_resistance = DriverResistance::Ohm1; // max power
-    st.set_config(config);
+    st.set_config(config).unwrap();
 
     let wup_config = WakeupConfig {
         period: WakeupPeriod::Ms500,
