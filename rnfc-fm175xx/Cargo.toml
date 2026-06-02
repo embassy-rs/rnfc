@@ -6,7 +6,13 @@ version = "0.1.0"
 license = "Apache-2.0 OR MIT"
 
 [features]
+# Emit logs via `defmt`.
 defmt = ["dep:defmt", "embassy-time/defmt", "rnfc-traits/defmt"]
+
+# Use the FM17550 LPCD path. Mutually exclusive with `ws1850s`.
+fm175xx = []
+# Use the WS1850S LPCD path. Mutually exclusive with `fm175xx`.
+ws1850s = []
 
 [dependencies]
 rnfc-traits = { path = "../rnfc-traits" }
