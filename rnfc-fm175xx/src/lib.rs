@@ -183,7 +183,7 @@ where
         self.npd.set_high().unwrap();
 
         // datasheet doesn't say anything about time after reset, wait a bit just in case.
-        Timer::after(Duration::from_millis(1)).await;
+        Timer::after(Duration::from_millis(10)).await;
 
         debug!("softreset");
         self.regs().command().write(|w| w.set_command(regs::CommandVal::SOFTRESET));
