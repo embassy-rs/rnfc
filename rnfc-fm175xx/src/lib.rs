@@ -8,9 +8,17 @@ mod interface;
 pub mod iso14443a;
 mod regs;
 
+// Exactly one chip must be selected at compile time.
+#[cfg(all(feature = "fm175xx", feature = "ws1850s"))]
+compile_error!("features `fm175xx` and `ws1850s` are mutually exclusive: enable exactly one.");
+#[cfg(not(any(feature = "fm175xx", feature = "ws1850s")))]
+compile_error!("no chip selected: enable exactly one of the `fm175xx` or `ws1850s` features.");
+
 use core::convert::Infallible;
 
-use embassy_time::{Duration, Instant, TimeoutError, Timer, with_timeout};
+use embassy_time::{Duration, Instant, Timer};
+#[cfg(feature = "fm175xx")]
+use embassy_time::{TimeoutError, with_timeout};
 use embedded_hal::digital::{InputPin, OutputPin};
 use embedded_hal_async::digital::Wait;
 pub use interface::*;
@@ -49,6 +57,11 @@ impl Default for RfConfig {
     }
 }
 
+/// LPCD wakeup configuration for the FM17550 (and FM17xx family).
+///
+/// The FM17550 drives the *extended* LPCD register page (accessed via reg
+/// `0x0F`) and needs software ADC auto-ranging + periodic recalibration.
+#[cfg(feature = "fm175xx")]
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct WakeupConfig {
@@ -80,9 +93,50 @@ pub struct WakeupConfig {
     pub recalibrate_interval: Option<Duration>,
 }
 
+/// LPCD wakeup configuration for the WS1850S (Wisesun).
+///
+/// The WS1850S drives its LPCD detector through the `VersionReg`-unlocked
+/// Page4/Page6 banks (main-page addresses `0x31..0x3E`) and auto-calibrates in
+/// hardware on every entry (`CalibEn`), so there is *no* `recalibrate_interval`
+/// — recalibration is automatic.
+#[cfg(feature = "ws1850s")]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub struct WakeupConfig {
+    /// Sleep period between probes (`WUPeriodReg`, `0x3D`).
+    /// `T_inactivity = wu_period * 256 * Tclk_32k`.
+    /// e.g. `0x0D` ⇒ ~101 ms, `0x20` ⇒ 250 ms, `0x40` ⇒ 500 ms. Reset `0x0F`.
+    pub wu_period: u8,
+
+    /// Trigger offset from the DAC reference (`LPCDReg` bits[3:0], `0x3C`). 0..=15.
+    ///
+    /// A field change beyond ±delta wakes the chip. Larger delta → shorter
+    /// detect distance but more noise immunity. AN602 recommends delta ≥ 4.
+    /// This is the dominant false-wakeup vs sensitivity knob.
+    pub delta: u8,
+
+    /// Probe duration (`SwingsCntReg` bits[3:0], `0x3E`). 0..=15. Reset 4.
+    /// `T_detect = swings_cnt * 16 * 2 * Tclk_27M12` (e.g. 5 ⇒ ~5.9 µs).
+    pub swings_cnt: u8,
+
+    /// Fire `TagDetIrq` only after detecting a card `skip + 1` times
+    /// (`SwingsCntReg` bits[6:4], `0x3E`) — a debounce/false-wakeup filter. 0..=7.
+    pub skip: u8,
+
+    /// N-driver conductance during LPCD (`CWGsN_lpcd`, `P5_Reg38` high nibble,
+    /// `0x38`). 0..=15. Together with `cwgsp_lpcd` sets the LPCD carrier field.
+    pub cwgsn_lpcd: u8,
+
+    /// P-driver conductance during LPCD (`CWGsP_lpcd`, `P5_Reg39` bits[5:0],
+    /// `0x39`). 0..=63.
+    pub cwgsp_lpcd: u8,
+}
+
 const FIFO_SIZE: usize = 64;
 
+#[cfg(feature = "fm175xx")]
 const ADC_REFERENCE_MIN: u8 = 0;
+#[cfg(feature = "fm175xx")]
 const ADC_REFERENCE_MAX: u8 = 0x7F;
 
 pub struct Fm175xx<I, NpdPin, IrqPin> {
@@ -129,7 +183,7 @@ where
         self.npd.set_high().unwrap();
 
         // datasheet doesn't say anything about time after reset, wait a bit just in case.
-        Timer::after(Duration::from_millis(1)).await;
+        Timer::after(Duration::from_millis(10)).await;
 
         debug!("softreset");
         self.regs().command().write(|w| w.set_command(regs::CommandVal::SOFTRESET));
@@ -214,6 +268,7 @@ where
         self.off();
     }
 
+    #[cfg(feature = "fm175xx")]
     pub async fn wait_for_card(&mut self, config: WakeupConfig) -> Result<(), Infallible> {
         assert!((1..=15).contains(&config.sleep_time));
         assert!((2..=31).contains(&config.prepare_time));
@@ -409,6 +464,124 @@ where
         }
     }
 
+    /// Put a WS1850S into LPCD (Low Power Card Detection) and block until a card
+    /// is detected.
+    ///
+    /// Unlike the FM17550 path, the WS1850S configures LPCD through the
+    /// `VersionReg`-unlocked Page4/Page6 banks (AN602 §7.1/§11) and
+    /// auto-calibrates in hardware on every entry (`CalibEn`), so there is no
+    /// software ADC auto-ranging and no periodic recalibration: a real card
+    /// returns `Ok(())` and the caller re-enters on its next poll (which
+    /// re-calibrates); a false wake self-corrects on re-enter the same way.
+    /// We therefore block on the IRQ line indefinitely.
+    #[cfg(feature = "ws1850s")]
+    pub async fn wait_for_card(&mut self, config: WakeupConfig) -> Result<(), Infallible> {
+        assert!(config.delta <= 0x0F);
+        assert!(config.swings_cnt <= 0x0F);
+        assert!(config.skip <= 0x07);
+        assert!(config.cwgsn_lpcd <= 0x0F);
+        assert!(config.cwgsp_lpcd <= 0x3F);
+
+        // SoftReset + release NPD. Leaves the chip powered (NPD high); LPCD runs
+        // in soft power-down, not hard power-down.
+        self.on().await;
+
+        // Carrier on (TxControlReg, 0x14). AN602 §7.1: 0x14 = 0x83.
+        self.regs().txcontrol().write(|w| {
+            w.set_tx1rfen(true);
+            w.set_tx2rfen(true);
+            w.set_invtx2on(true);
+        });
+
+        // --- Page4 (unlock VersionReg = 0x5E) ---
+        self.reg_write_raw(0x37, 0x5E);
+        // LPCDReg (0x3C): CLK32K_En[5] | CalibEn[4] | Delta[3:0].
+        self.reg_write_raw(0x3C, 0x20 | 0x10 | (config.delta & 0x0F));
+        // WUPeriodReg (0x3D): sleep period.
+        self.reg_write_raw(0x3D, config.wu_period);
+        // SwingsCntReg (0x3E): LPCD_en[7] | Skip[6:4] | SwingsCnt[3:0].
+        self.reg_write_raw(0x3E, 0x80 | ((config.skip & 0x07) << 4) | (config.swings_cnt & 0x0F));
+        // Re-lock.
+        self.reg_write_raw(0x37, 0x00);
+
+        // --- Page6 (unlock VersionReg = 0x5A) ---
+        self.reg_write_raw(0x37, 0x5A);
+        // P5_Reg38 (0x38): CWGsN_lpcd in the high nibble.
+        self.reg_write_raw(0x38, (config.cwgsn_lpcd & 0x0F) << 4);
+        // P5_Reg39 (0x39): CWGsP_lpcd in bits[5:0].
+        self.reg_write_raw(0x39, config.cwgsp_lpcd & 0x3F);
+        // P4_Reg33 (0x33): calibration step/mode (AN602 §7.1 typical 0xA0).
+        self.reg_write_raw(0x33, 0xA0);
+        // Re-lock. (0x31 is read-only and 0x36 ADC ref is left at reset; rely on
+        // CalibEn auto-calibration.)
+        self.reg_write_raw(0x37, 0x00);
+
+        // IRQ: active-low, push-pull — matches the FM17xx path, the board's
+        // `Pull::None` IRQ wiring and `wait_for_low()`. Do NOT use AN602 §7.1's
+        // active-high/open-drain example: with `Pull::None` the line would float.
+        self.regs().commien().write(|w| w.set_irqinv(true)); // ComIEnReg bit7
+        self.regs().divien().write(|w| w.set_irqpushpull(true)); // DivIEnReg bit7
+        // DivIEnReg (0x03) bit5 = TagDetIEn (WS1850S-specific, no typed field).
+        let divien = self.reg_read_raw(0x03) | 0x20;
+        self.reg_write_raw(0x03, divien);
+
+        // The chip samples the ambient field and stores its LPCD reference in
+        // hardware on entry (CalibEn). It can be read back for diagnostics at
+        // P5_Reg31 (Page6, read-only) — see `read_lpcd_reference()`.
+
+        // Enter LPCD: PCD soft power-down (CommandReg 0x01 = 0x10).
+        self.regs().command().write(|w| w.set_powerdown(true));
+
+        // Wake arrives as DivIrqReg (0x05) TagDetIrq (bit5 / & 0x20). Block on
+        // the IRQ line indefinitely (no periodic re-enter / recalibrate).
+        info!("ws1850s: entering LPCD, waiting for irq...");
+        loop {
+            match self.irq.wait_for_low().await {
+                Ok(()) => {
+                    info!("ws1850s: got LPCD irq!");
+                    return Ok(());
+                }
+                Err(_) => warn!("irq.wait_for_low() error"),
+            }
+        }
+    }
+
+    /// Raw main-page register write (addr < 0x40), used by the WS1850S LPCD path
+    /// for the `VersionReg`-unlocked Page4/Page6 banks that have no typed
+    /// accessors.
+    #[cfg(feature = "ws1850s")]
+    fn reg_write_raw(&mut self, addr: usize, val: u8) {
+        self.iface.write_reg(addr, val);
+    }
+
+    /// Raw main-page register read (addr < 0x40). See [`Self::reg_write_raw`].
+    #[cfg(feature = "ws1850s")]
+    fn reg_read_raw(&mut self, addr: usize) -> u8 {
+        self.iface.read_reg(addr)
+    }
+
+    /// Read the LPCD reference (`P5_Reg31`, Page6, read-only) that the WS1850S
+    /// calibrated to on its last LPCD entry. Diagnostic only — call it after a
+    /// wake, while the chip is still powered.
+    #[cfg(feature = "ws1850s")]
+    pub fn read_lpcd_reference(&mut self) -> u8 {
+        self.reg_write_raw(0x37, 0x5A); // unlock Page6
+        let r = self.reg_read_raw(0x31);
+        self.reg_write_raw(0x37, 0x00); // re-lock
+        r
+    }
+
+    /// Read `VersionReg` (0x37) to identify the chip.
+    ///
+    /// FM17xx returns e.g. `0x88`; WS1850S returns `0x12` or `0x15`. Used by the
+    /// factory hwtest to assert the right silicon is on the board. Powers the
+    /// chip on first (`new()` never touches it).
+    pub async fn read_version(&mut self) -> u8 {
+        self.on().await;
+        self.regs().version().read()
+    }
+
+    #[cfg(feature = "fm175xx")]
     fn _dump(&mut self) {
         info!("==============");
         info!(
@@ -437,6 +610,7 @@ where
         info!("adc val {}", self.lpcd_get_adc_value());
     }
 
+    #[cfg(feature = "fm175xx")]
     fn lpcd_set_adc_config(&mut self, reference: u8, bias_current: u8) {
         self.regs().lpcd_adc_referece().write_value(reference & 0x3F);
         self.regs().lpcd_bias_current().write(|w| {
@@ -445,6 +619,7 @@ where
         });
     }
 
+    #[cfg(feature = "fm175xx")]
     fn lpcd_read_adc(&mut self) -> u8 {
         self.regs().lpcd_ctrl1().write(|w| {
             w.set_bit_ctrl_set(false);
@@ -480,6 +655,7 @@ where
         self.lpcd_get_adc_value()
     }
 
+    #[cfg(feature = "fm175xx")]
     fn lpcd_get_adc_value(&mut self) -> u8 {
         let h = self.regs().lpcd_adc_result_h().read();
         let l = self.regs().lpcd_adc_result_l().read();
@@ -537,6 +713,7 @@ where
 /// If `f` returns `false` for all values, returns `None`.
 ///
 /// `f` is assumed to be monotonically increasing.
+#[cfg(feature = "fm175xx")]
 fn binary_search(mut min: i32, mut max: i32, mut f: impl FnMut(i32) -> bool) -> Option<i32> {
     let orig_max = max;
     min -= 1;
