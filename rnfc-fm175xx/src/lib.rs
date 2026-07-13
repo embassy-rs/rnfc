@@ -510,10 +510,14 @@ where
         self.reg_write_raw(0x38, (config.cwgsn_lpcd & 0x0F) << 4);
         // P5_Reg39 (0x39): CWGsP_lpcd in bits[5:0].
         self.reg_write_raw(0x39, config.cwgsp_lpcd & 0x3F);
+        // P5_Reg31 (0x31): AN602 §10.3.1 documents it as the read-only LPCD
+        // reference, but the vendor reference init (§7.1) writes 0xA1 to it —
+        // follow the vendor code. (0x36 ADC ref is left at reset; writes to it
+        // were bench-verified to have no effect on either extended page.)
+        self.reg_write_raw(0x31, 0xA1);
         // P4_Reg33 (0x33): calibration step/mode (AN602 §7.1 typical 0xA0).
         self.reg_write_raw(0x33, 0xA0);
-        // Re-lock. (0x31 is read-only and 0x36 ADC ref is left at reset; rely on
-        // CalibEn auto-calibration.)
+        // Re-lock.
         self.reg_write_raw(0x37, 0x00);
 
         // IRQ: active-low, push-pull — matches the FM17xx path, the board's
@@ -538,7 +542,19 @@ where
         loop {
             match self.irq.wait_for_low().await {
                 Ok(()) => {
-                    info!("ws1850s: got LPCD irq!");
+                    // LPCD diagnostics. TagDetIrq means the chip has auto-woken
+                    // to Ready (AN602 §3.2), so I2C access is safe again.
+                    // lpcd_ref is the hardware-calibrated reference; cwgsp is
+                    // where the CalibMode=1 calibration parked the P-driver.
+                    let divirq = self.reg_read_raw(0x05);
+                    self.reg_write_raw(0x37, 0x5A);
+                    let lpcd_ref = self.reg_read_raw(0x31);
+                    let cwgsp = self.reg_read_raw(0x39);
+                    self.reg_write_raw(0x37, 0x00);
+                    info!(
+                        "ws1850s: got LPCD irq! divirq={:02x} lpcd_ref={:02x} cwgsp={:02x}",
+                        divirq, lpcd_ref, cwgsp
+                    );
                     return Ok(());
                 }
                 Err(_) => warn!("irq.wait_for_low() error"),
