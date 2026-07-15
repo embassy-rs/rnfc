@@ -1,0 +1,13 @@
+[package]
+name = "ndef"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+packed_struct = { version = "0.10.1", default-features = false }
+heapless = "0.8"
+thiserror = { version = "2.0.8", default-features = false }
+defmt = { version = "0.3", optional = true }
+
+[features]
+defmt-03 = ["dep:defmt", "heapless/defmt-03"]
