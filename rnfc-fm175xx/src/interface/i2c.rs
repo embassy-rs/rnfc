@@ -1,3 +1,4 @@
+use cortex_m::asm::delay;
 use embedded_hal::i2c::I2c;
 
 use super::Interface;
@@ -21,7 +22,18 @@ impl<T: I2c> I2cInterface<T> {
     }
 
     fn write_reg_raw(&mut self, reg: u8, val: u8) {
-        self.i2c.write(self.address, &[reg as u8, val]).unwrap();
+        // Retry NACKs a few times before giving up: the WS1850S NACKs its I2C
+        // address while in soft power-down, and the NACKed transaction itself
+        // wakes the chip (the wake takes ~1 ms) — so the first write after
+        // soft power-down legitimately fails once and then succeeds. Real bus
+        // faults still panic after the retries are exhausted.
+        for _ in 0..5 {
+            if self.i2c.write(self.address, &[reg, val]).is_ok() {
+                return;
+            }
+            delay(64_000); // ~1 ms at 64 MHz
+        }
+        self.i2c.write(self.address, &[reg, val]).unwrap();
     }
 }
 
