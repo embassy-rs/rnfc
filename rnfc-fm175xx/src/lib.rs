@@ -142,6 +142,13 @@ pub struct WakeupConfig {
     /// drive), the target cannot influence the result.
     pub adc_ref: u8,
 
+    /// Calibration search step (`CalibStep`, `P4_Reg33` bits[7:6]). 0..=3:
+    /// 0 → ±8 step 1, 1 → ±16/2, 2 → −24..+21/3, 3 → [2, 62]/4 (AN602
+    /// §10.3.2). The window must reach the CWGsP where the ADC crosses
+    /// `adc_ref` or the reference saturates; coarse steps bias the sampled
+    /// reference, so prefer 0 with a well-centered `cwgsp_lpcd`.
+    pub calib_step: u8,
+
     /// Extra low bits ORed into `P4_Reg33` (`0x33`, bits\[4:0\]):
     /// `LPCDADCManEn`\[4\], `LPCDEnRCcal`\[3\], `RC32KCalMan`\[2\],
     /// `RC27MCalMan`\[1\], `LPCDUseRC`\[0\] (AN602 §10.3.2, semantics largely
@@ -265,6 +272,19 @@ where
     pub async fn sleep(&mut self) {
         self.on().await;
 
+        // FM17550 LPCD teardown. The WS1850S has no extended-register file
+        // behind reg 0x0F, so these writes would land on an unrelated
+        // register there; its LPCD is fully stopped by the softreset above.
+        #[cfg(feature = "fm175xx")]
+        self.lpcd_teardown();
+
+        Timer::after(Duration::from_millis(1)).await; // give it some time
+
+        self.off();
+    }
+
+    #[cfg(feature = "fm175xx")]
+    fn lpcd_teardown(&mut self) {
         // lpcd reset
         self.regs().lpcd_ctrl1().write(|w| {
             w.set_bit_ctrl_set(false); // clear bits written with 1
@@ -295,10 +315,6 @@ where
         self.regs().lpcd_ctrl3().write(|w| {
             w.set_hpden(false);
         });
-
-        Timer::after(Duration::from_millis(1)).await; // give it some time
-
-        self.off();
     }
 
     #[cfg(feature = "fm175xx")]
@@ -514,6 +530,7 @@ where
         assert!(config.skip <= 0x07);
         assert!(config.cwgsn_lpcd <= 0x0F);
         assert!(config.cwgsp_lpcd <= 0x3F);
+        assert!(config.calib_step <= 0x03);
         assert!(config.calib_flags <= 0x1F);
 
         // SoftReset + release NPD. Leaves the chip powered (NPD high); LPCD
@@ -553,20 +570,17 @@ where
         self.reg_write_raw(0x38, (config.cwgsn_lpcd & 0x0F) << 4);
         // P5_Reg39 (0x39): CWGsP_lpcd in bits[5:0].
         self.reg_write_raw(0x39, config.cwgsp_lpcd & 0x3F);
-        // P5_Reg31 (0x31): AN602 §10.3.1 documents it as the read-only LPCD
-        // reference, but the vendor reference init (§7.1) writes 0xA1 to it —
-        // follow the vendor code.
+        // P5_Reg31 (0x31): the read-only LPCD reference. The vendor init
+        // (§7.1) writes 0xA1 to it anyway; bench-verified to be a no-op
+        // (register keeps its sampled value), kept only to match vendor code.
         self.reg_write_raw(0x31, 0xA1);
         // P5_Reg36 (0x36): ADC target of the entry calibration search. (Earlier
         // "0x36 is a no-op" bench findings were taken with the search range
         // confined to the saturated plateau, where no target is reachable.)
         self.reg_write_raw(0x36, config.adc_ref);
-        // P4_Reg33 (0x33): CalibMode[5]=1 with CalibStep[7:6]=0 — search CWGsP
-        // ±8 in steps of 1 around cwgsp_lpcd for the ADC closest to adc_ref.
-        // Coarser steps quantize too hard on a steep antenna (bench-measured
-        // ~20 ADC counts per CWGsP step), and direct-sample mode (CalibMode=0)
-        // is only used by the `lpcd_sample_adc` diagnostic.
-        self.reg_write_raw(0x33, 0x20 | (config.calib_flags & 0x1F));
+        // P4_Reg33 (0x33): CalibMode[5]=1 with the configured CalibStep[7:6];
+        // see the `calib_step` field docs for the search-window/step tradeoff.
+        self.reg_write_raw(0x33, ((config.calib_step & 0x03) << 6) | 0x20 | (config.calib_flags & 0x1F));
         // Re-lock.
         self.reg_write_raw(0x37, 0x00);
 
@@ -610,8 +624,21 @@ where
                 return Ok(());
             }
 
+            // Diagnostic: where the pre-settle calibration parked.
+            self.reg_write_raw(0x37, 0x5A);
+            let lpcd_ref = self.reg_read_raw(0x31);
+            let cwgsp = self.reg_read_raw(0x39);
+            self.reg_write_raw(0x37, 0x00);
+            debug!("ws1850s: settle done, lpcd_ref={:02x} cwgsp={:02x}", lpcd_ref, cwgsp);
+
             self.reg_write_raw(0x37, 0x5E);
             self.reg_write_raw(0x3C, 0x20 | 0x10 | (config.delta & 0x0F));
+            self.reg_write_raw(0x37, 0x00);
+            // Re-sample the reference with CalibMode=0 (one direct sample at
+            // the parked CWGsP): the CalibMode=1 sweep re-heats the detector
+            // and stores a reference biased off the settled probe level.
+            self.reg_write_raw(0x37, 0x5A);
+            self.reg_write_raw(0x33, config.calib_flags & 0x1F);
             self.reg_write_raw(0x37, 0x00);
             // Clear any pending DivIrq bits (bit7=0 ⇒ clear marked bits).
             self.reg_write_raw(0x05, 0x7F);
@@ -626,19 +653,12 @@ where
         loop {
             match self.irq.wait_for_low().await {
                 Ok(()) => {
-                    // LPCD diagnostics. TagDetIrq means the chip has auto-woken
-                    // to Ready (AN602 §3.2), so I2C access is safe again.
-                    // lpcd_ref is the hardware-calibrated reference; cwgsp is
-                    // where the entry calibration parked the P-driver.
+                    // TagDetIrq means the chip auto-woke to Ready (AN602
+                    // §3.2), so I2C access is safe again. Don't read the
+                    // reference/CWGsP here: the wake re-samples them, so the
+                    // readbacks don't reflect the LPCD-time state.
                     let divirq = self.reg_read_raw(0x05);
-                    self.reg_write_raw(0x37, 0x5A);
-                    let lpcd_ref = self.reg_read_raw(0x31);
-                    let cwgsp = self.reg_read_raw(0x39);
-                    self.reg_write_raw(0x37, 0x00);
-                    debug!(
-                        "ws1850s: got LPCD irq! divirq={:02x} lpcd_ref={:02x} cwgsp={:02x}",
-                        divirq, lpcd_ref, cwgsp
-                    );
+                    debug!("ws1850s: got LPCD irq! divirq={:02x}", divirq);
                     return Ok(());
                 }
                 Err(_) => warn!("irq.wait_for_low() error"),
@@ -658,6 +678,50 @@ where
     #[cfg(feature = "ws1850s")]
     fn reg_read_raw(&mut self, addr: usize) -> u8 {
         self.iface.read_reg(addr)
+    }
+
+    /// Characterization diagnostic: take one direct-sampled (CalibMode=0)
+    /// LPCD ADC reading at the given drive point, ~10 ms. Requires
+    /// [`Self::prepare_sample`] first.
+    #[cfg(feature = "ws1850s")]
+    pub async fn lpcd_sample_adc(&mut self, cwgsn: u8, cwgsp: u8, calib_flags: u8) -> u8 {
+        // CLK32K_En | CalibEn | delta 15; wu long enough to never self-probe.
+        self.reg_write_raw(0x37, 0x5E);
+        self.reg_write_raw(0x3C, 0x20 | 0x10 | 0x0F);
+        self.reg_write_raw(0x3D, 0xFF);
+        self.reg_write_raw(0x3E, 0x80 | 0x0F);
+        self.reg_write_raw(0x37, 0x00);
+        // Page6: drive point, CalibMode=0 (direct sample at this exact CWGsP).
+        self.reg_write_raw(0x37, 0x5A);
+        self.reg_write_raw(0x38, (cwgsn & 0x0F) << 4);
+        self.reg_write_raw(0x39, cwgsp & 0x3F);
+        self.reg_write_raw(0x33, calib_flags & 0x1F);
+        self.reg_write_raw(0x37, 0x00);
+
+        // Enter soft power-down: the entry calibration samples immediately.
+        self.regs().command().write(|w| w.set_powerdown(true));
+        Timer::after(Duration::from_millis(5)).await;
+        // Knock awake (first I2C write NACKs and wakes; the retry absorbs it).
+        self.reg_write_raw(0x01, 0x00);
+
+        self.reg_write_raw(0x37, 0x5A);
+        let r = self.reg_read_raw(0x31);
+        self.reg_write_raw(0x37, 0x00);
+        // Drop any TagDetIrq latched during entry.
+        self.reg_write_raw(0x05, 0x7F);
+        r
+    }
+
+    /// Power the chip up ready for [`Self::lpcd_sample_adc`]: NPD high, soft
+    /// reset, carrier drivers configured (same preamble as `wait_for_card`).
+    #[cfg(feature = "ws1850s")]
+    pub async fn prepare_sample(&mut self) {
+        self.on().await;
+        self.regs().txcontrol().write(|w| {
+            w.set_tx1rfen(true);
+            w.set_tx2rfen(true);
+            w.set_invtx2on(true);
+        });
     }
 
     /// Read the LPCD reference (`P5_Reg31`, Page6, read-only) that the WS1850S
