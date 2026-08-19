@@ -13,9 +13,13 @@ cargo build --release --manifest-path rnfc/Cargo.toml --features 'defmt'
 cargo build --release --manifest-path rnfc/Cargo.toml --features 'log'
 RUST_LOG=trace cargo test --release --manifest-path rnfc/Cargo.toml --features 'log'
 
-cargo build --release --manifest-path rnfc-fm175xx/Cargo.toml --features ''
-cargo build --release --manifest-path rnfc-fm175xx/Cargo.toml --features 'defmt'
-cargo build --release --manifest-path rnfc-fm175xx/Cargo.toml --features 'log'
+cargo build --release --manifest-path rnfc-fm175xx/Cargo.toml --features 'fm175xx'
+cargo build --release --manifest-path rnfc-fm175xx/Cargo.toml --features 'fm175xx','defmt'
+cargo build --release --manifest-path rnfc-fm175xx/Cargo.toml --features 'fm175xx','log'
+
+cargo build --release --manifest-path rnfc-fm175xx/Cargo.toml --features 'ws1850s'
+cargo build --release --manifest-path rnfc-fm175xx/Cargo.toml --features 'ws1850s','defmt'
+cargo build --release --manifest-path rnfc-fm175xx/Cargo.toml --features 'ws1850s','log'
 
 cargo build --release --manifest-path rnfc-st25r39/Cargo.toml --features ''
 cargo build --release --manifest-path rnfc-st25r39/Cargo.toml --features 'defmt'
