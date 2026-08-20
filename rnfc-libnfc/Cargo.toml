@@ -1,0 +1,11 @@
+[package]
+name = "rnfc-libnfc"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.98"
+hex-literal = "0.4.1"
+log = "0.4.20"
+nfc1-sys = { version = "0.3.9", default-features = false, features = [] }
+rnfc-traits = { path = "../rnfc-traits" }
