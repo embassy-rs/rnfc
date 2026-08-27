@@ -91,6 +91,27 @@ pub struct WakeupConfig {
     pub recalibrate_interval: Option<Duration>,
 }
 
+/// How the WS1850S gets its LPCD wake reference value.
+#[cfg(feature = "ws1850s")]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum CalibMode {
+    /// No calibration. The reference value stays as it is.
+    Off,
+    /// Sample the ADC data on entry to LPCD and use it as the reference value.
+    Reference,
+    /// Adjust `cwgsp_lpcd` and use the ADC data closest to the ADC reference
+    /// level as the reference value.
+    ///
+    /// `calib_step` (`P5_Reg33` bits[7:6], 0..=3) is the step size and range
+    /// used to adjust `cwgsp_lpcd`:
+    /// 0 = step 1, searches [CWGsP_lpcd − 8, CWGsP_lpcd + 7]
+    /// 1 = step 2, searches [CWGsP_lpcd − 16, CWGsP_lpcd + 14]
+    /// 2 = step 3, searches [CWGsP_lpcd − 24, CWGsP_lpcd + 21]
+    /// 3 = step 4, searches full [2, 62] range
+    CwgspAndReference { calib_step: u8 },
+}
+
 /// LPCD wakeup configuration for the WS1850S (Wisesun).
 #[cfg(feature = "ws1850s")]
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -103,6 +124,23 @@ pub struct WakeupConfig {
 
     /// Probe duration (`SwingsCntReg` bits[3:0], `0x3E`). 0..=15.
     pub swings_cnt: u8,
+
+    /// Sleep time (`WUPeriodReg`, `0x3D`). 0..=255.
+    /// Tsleep = wu_period * 256 * Tclk_32k. E.g. 0x0D is about 101.57ms.
+    pub wu_period: u8,
+
+    /// Skip count (`SwingsCntReg` bits[6:4], `0x3E`). 0..=7.
+    /// The irq is generated only after a card is detected (skip + 1) times.
+    pub skip: u8,
+
+    /// How to get the wake reference value (`LPCDReg` bit[4] and `P5_Reg33` bit[5]).
+    pub calib_mode: CalibMode,
+
+    /// Conductance of the output N-driver during LPCD (`P5_Reg38` bits[7:4]). 0..=15.
+    pub cwgsn_lpcd: u8,
+
+    /// Conductance of the output P-driver during LPCD (`P5_Reg39` bits[5:0]). 0..=63.
+    pub cwgsp_lpcd: u8,
 
     /// How often to re-enter LPCD which calibrates
     pub recalibrate_interval: Option<Duration>,
@@ -453,13 +491,16 @@ where
     /// is detected.
     ///
     /// The register sequence is the vendor driver's `pcd_lpcd_start`, hardcoded
-    /// except for the `delta`/`swings_cnt` sensitivity knobs. The chip samples
+    /// except for the sensitivity and drive knobs in [`WakeupConfig`]. The chip samples
     /// its wake reference in hardware on entry (`CalibEn`); if no card shows up
     /// within 30s we re-enter LPCD to recalibrate against drift.
     #[cfg(feature = "ws1850s")]
     pub async fn wait_for_card(&mut self, config: WakeupConfig) -> Result<(), Infallible> {
         assert!(config.delta <= 0x0F);
         assert!(config.swings_cnt <= 0x0F);
+        assert!(config.skip <= 0x07);
+        assert!(config.cwgsn_lpcd <= 0x0F);
+        assert!(config.cwgsp_lpcd <= 0x3F);
 
         let recalibrate_interval = config.recalibrate_interval.unwrap_or(Duration::MAX);
 
@@ -472,16 +513,25 @@ where
             self.reg_write_raw(0x14, 0x23); // Tx2CW = 1, continuous
 
             self.reg_write_raw(0x37, 0x5E); // unlock private regs
-            self.reg_write_raw(0x3C, 0x30 + config.delta); // CLK32K_En | CalibEn | Delta[3:0]
-            self.reg_write_raw(0x3D, 0x0D); // sleep period
-            self.reg_write_raw(0x3E, 0x90 | config.swings_cnt); // LPCD_en | Skip | SwingsCnt
+            let (calib_en, calib_reg) = match config.calib_mode {
+                CalibMode::Off => (0x00, 0x00),
+                CalibMode::Reference => (0x10, 0x00),
+                CalibMode::CwgspAndReference { calib_step } => {
+                    assert!(calib_step <= 0x03);
+                    (0x10, (calib_step << 6) | 0x20)
+                }
+            };
+
+            self.reg_write_raw(0x3C, 0x20 | calib_en | config.delta); // CLK32K_En | CalibEn | Delta[3:0]
+            self.reg_write_raw(0x3D, config.wu_period); // sleep period
+            self.reg_write_raw(0x3E, 0x80 | (config.skip << 4) | config.swings_cnt); // LPCD_en | Skip | SwingsCnt
             self.reg_write_raw(0x37, 0x00); // re-lock
 
             self.reg_write_raw(0x37, 0x5A); // unlock private regs
-            self.reg_write_raw(0x38, 0x80); // LPCD tx power
-            self.reg_write_raw(0x39, 0x1F); // LPCD tx power
+            self.reg_write_raw(0x38, config.cwgsn_lpcd << 4); // LPCD tx power, N-driver
+            self.reg_write_raw(0x39, config.cwgsp_lpcd); // LPCD tx power, P-driver
             self.reg_write_raw(0x31, 0xA1); // LPCD reference
-            self.reg_write_raw(0x33, 0xA0); // calib mode
+            self.reg_write_raw(0x33, calib_reg); // CalibStep | CalibMode
             self.reg_write_raw(0x36, 0x80);
             self.reg_write_raw(0x37, 0x00); // re-lock
 
