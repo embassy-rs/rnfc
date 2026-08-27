@@ -103,6 +103,9 @@ pub struct WakeupConfig {
 
     /// Probe duration (`SwingsCntReg` bits[3:0], `0x3E`). 0..=15.
     pub swings_cnt: u8,
+
+    /// How often to re-enter LPCD which calibrates
+    pub recalibrate_interval: Option<Duration>,
 }
 
 const FIFO_SIZE: usize = 64;
@@ -458,6 +461,8 @@ where
         assert!(config.delta <= 0x0F);
         assert!(config.swings_cnt <= 0x0F);
 
+        let recalibrate_interval = config.recalibrate_interval.unwrap_or(Duration::MAX);
+
         loop {
             // Reset via NPD + softreset. Leaves the chip powered (NPD high);
             // LPCD runs in soft power-down, not hard power-down.
@@ -488,7 +493,7 @@ where
             self.reg_write_raw(0x01, 0x10); // PCD soft power-down, LPCD running
 
             debug!("ws1850s: entering LPCD, waiting for irq...");
-            match with_timeout(Duration::from_secs(30), self.irq.wait_for_low()).await {
+            match with_timeout(recalibrate_interval, self.irq.wait_for_low()).await {
                 Ok(Ok(())) => {
                     // TagDetIrq auto-wakes the chip to Ready, so I2C is safe again.
                     let divirq = self.reg_read_raw(0x05);
