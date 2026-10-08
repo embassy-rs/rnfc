@@ -89,7 +89,7 @@ impl Reader {
                 Ok(NFCReaderEvent::TagsDetected { tags }) => {
                     for tag in tags {
                         if let Some(t) = unsafe { tag.asNFCISO7816Tag() } {
-                            info!("tag detected: iso7816");
+                            debug!("tag detected: iso7816");
                             let uid = unsafe { t.identifier().to_vec() };
                             return Ok(Tag {
                                 session: self.session.clone(),
@@ -97,7 +97,7 @@ impl Reader {
                                 tag,
                             });
                         } else if let Some(t) = unsafe { tag.asNFCMiFareTag() } {
-                            info!("tag detected: mifare");
+                            debug!("tag detected: mifare");
                             let uid = unsafe { t.identifier().to_vec() };
                             return Ok(Tag {
                                 session: self.session.clone(),
@@ -283,7 +283,7 @@ define_class!(
 
         #[unsafe(method(tagReaderSession:didInvalidateWithError:))]
         fn on_session_inactive(&self, _session: &NFCTagReaderSession, error: &NSError) {
-            info!(
+            debug!(
                 "on session inactive: domain={} code={} {}",
                 error.domain(),
                 error.code(),
