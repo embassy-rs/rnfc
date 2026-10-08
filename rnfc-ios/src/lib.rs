@@ -3,11 +3,12 @@
 use core::ptr::NonNull;
 use std::cell::OnceCell;
 use std::fmt::Display;
+use std::time::Instant;
 
 use async_channel::{Receiver, Sender};
 use block2::RcBlock;
 use dispatch2::{DispatchQoS, DispatchQueue, GlobalQueueIdentifier};
-use log::{debug, info};
+use log::{debug, info, warn};
 use objc2::rc::Retained;
 use objc2::runtime::ProtocolObject;
 use objc2::{AnyThread, DefinedClass, define_class, msg_send};
@@ -88,6 +89,7 @@ impl Reader {
                 Ok(NFCReaderEvent::TagsDetected { tags }) => {
                     for tag in tags {
                         if let Some(t) = unsafe { tag.asNFCISO7816Tag() } {
+                            info!("tag detected: iso7816");
                             let uid = unsafe { t.identifier().to_vec() };
                             return Ok(Tag {
                                 session: self.session.clone(),
@@ -95,6 +97,7 @@ impl Reader {
                                 tag,
                             });
                         } else if let Some(t) = unsafe { tag.asNFCMiFareTag() } {
+                            info!("tag detected: mifare");
                             let uid = unsafe { t.identifier().to_vec() };
                             return Ok(Tag {
                                 session: self.session.clone(),
@@ -202,17 +205,24 @@ impl IsoDepReader for IsoDepTag {
         let (s, mut r) = async_broadcast::broadcast(1);
         let completion = RcBlock::new(move |data: NonNull<NSData>, sw1: u8, sw2: u8, e: *mut NSError| {
             let data: &NSData = unsafe { data.as_ref() };
-            if e.is_null() {
-                let mut data = data.to_vec();
-                data.push(sw1);
-                data.push(sw2);
-                s.try_broadcast(Ok(data)).unwrap();
-            } else {
-                s.try_broadcast(Err(())).unwrap();
+            // SAFETY: CoreNFC passes either nil or a valid NSError for the duration of the call.
+            match unsafe { e.as_ref() } {
+                None => {
+                    let mut data = data.to_vec();
+                    data.push(sw1);
+                    data.push(sw2);
+                    s.try_broadcast(Ok(data)).unwrap();
+                }
+                Some(e) => {
+                    let err = format!("domain={} code={} {}", e.domain(), e.code(), e.localizedDescription());
+                    s.try_broadcast(Err(err)).unwrap();
+                }
             }
         });
-        if let Some(t) = unsafe { self.tag.asNFCISO7816Tag() } {
+        let start = Instant::now();
+        let path = if let Some(t) = unsafe { self.tag.asNFCISO7816Tag() } {
             unsafe { t.sendCommandAPDU_completionHandler(&apdu, &completion) };
+            "iso7816"
         } else if let Some(t) = unsafe { self.tag.asNFCMiFareTag() } {
             let family = unsafe { t.mifareFamily() };
             let family = match family {
@@ -223,10 +233,22 @@ impl IsoDepReader for IsoDepTag {
             };
             debug!("mifare family: {:?}", family);
             unsafe { t.sendMiFareISO7816Command_completionHandler(&apdu, &completion) };
-        }
+            family
+        } else {
+            warn!("tag is neither iso7816 nor mifare, command not sent");
+            "none"
+        };
 
-        let Ok(Ok(data)) = r.recv().await else {
-            return Err(ReaderError::CommandFailed);
+        let data = match r.recv().await {
+            Ok(Ok(data)) => data,
+            Ok(Err(err)) => {
+                warn!("transceive failed after {:?} via {}: {}", start.elapsed(), path, err);
+                return Err(ReaderError::CommandFailed);
+            }
+            Err(_) => {
+                warn!("transceive got no response after {:?} via {}", start.elapsed(), path);
+                return Err(ReaderError::CommandFailed);
+            }
         };
 
         if rx.len() < data.len() {
@@ -260,8 +282,13 @@ define_class!(
         }
 
         #[unsafe(method(tagReaderSession:didInvalidateWithError:))]
-        fn on_session_inactive(&self, _session: &NFCTagReaderSession, _error: &NSError) {
-            info!("on session inactive");
+        fn on_session_inactive(&self, _session: &NFCTagReaderSession, error: &NSError) {
+            info!(
+                "on session inactive: domain={} code={} {}",
+                error.domain(),
+                error.code(),
+                error.localizedDescription()
+            );
             self.ivars().sender.get().map(|s| s.try_send(NFCReaderEvent::SessionInactive));
         }
 
